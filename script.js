@@ -874,6 +874,38 @@ async function handleSaveAs() {
 document.getElementById('file-menu-save').addEventListener('click', handleSave);
 document.getElementById('file-menu-save-as').addEventListener('click', handleSaveAs);
 
+document.getElementById('file-menu-close-tab')?.addEventListener('click', () => {
+    const docNames = Object.keys(appSettings.projectDocuments);
+    if (docNames.length <= 1) {
+        alert("Cannot close the only remaining document.");
+        return;
+    }
+    if (confirm(`Are you sure you want to close "${currentDocument}"?\n\nThis will permanently delete this document's text from the project.`)) {
+        delete appSettings.projectDocuments[currentDocument];
+        const remainingDocs = Object.keys(appSettings.projectDocuments);
+        currentDocument = remainingDocs[0];
+        saveSettings();
+        rebuildDocumentSidebar();
+        loadCurrentDocument();
+    }
+});
+
+document.getElementById('file-menu-close-other-tabs')?.addEventListener('click', () => {
+    const docNames = Object.keys(appSettings.projectDocuments);
+    if (docNames.length <= 1) {
+        alert("No other documents to close.");
+        return;
+    }
+    if (confirm(`Are you sure you want to close all documents EXCEPT "${currentDocument}"?\n\nThis will permanently delete the text of all other documents.`)) {
+        saveCurrentDocument(); // Ensure current text is saved
+        const savedDocText = appSettings.projectDocuments[currentDocument];
+        appSettings.projectDocuments = {};
+        appSettings.projectDocuments[currentDocument] = savedDocText;
+        saveSettings();
+        rebuildDocumentSidebar();
+    }
+});
+
 document.getElementById('file-menu-rename').addEventListener('click', () => {
     const currentName = appSettings.projectName || "Untitled Project";
     const newName = prompt("Rename Project:", currentName);
