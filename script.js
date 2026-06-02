@@ -489,49 +489,31 @@ window.addEventListener('pywebviewready', async () => {
         } catch (e) { alert("Invalid project file."); }
     } else if (initialFile && initialFile.error) { alert(initialFile.error); }
 
-    // Check for cloud updates if cloudDir is configured
-    if (appSettings.cloudDir) {
-        try {
-            const check = await window.pywebview.api.check_for_updates(appSettings.cloudDir);
-            if (check && check.update_available) {
-                const btnUpdate = document.getElementById('btn-update-now');
-                if (btnUpdate) {
-                    btnUpdate.style.display = 'inline-block';
-                    btnUpdate.addEventListener('click', async () => {
-                        const confirmMsg = `An update to ReelScript version ${check.cloud_version} is available!\n\n` +
-                            `Local version: ${check.local_version}\n` +
-                            `Cloud version: ${check.cloud_version}\n\n` +
-                            `What's new:\n` + check.changelog.map(c => `• ${c}`).join('\n') + `\n\n` +
-                            `Would you like to download, install, and restart ReelScript now?`;
-
-                        if (confirm(confirmMsg)) {
-                            btnUpdate.disabled = true;
-                            btnUpdate.textContent = '⚡ INSTALLING...';
-                            syncDot.style.backgroundColor = '#f59e0b';
-                            syncText.textContent = 'Installing update...';
-
-                            const install = await window.pywebview.api.install_cloud_update(appSettings.cloudDir);
-                            if (install && install.error) {
-                                alert(install.error);
-                                btnUpdate.disabled = false;
-                                btnUpdate.textContent = '⚡ UPDATE NOW';
-                                syncDot.style.backgroundColor = '#ef4444';
-                                syncText.textContent = 'Update failed';
-                            } else if (install && install.success) {
-                                syncDot.style.backgroundColor = '#10b981';
-                                syncText.textContent = 'Update complete! Restarting...';
-                                alert("Update installed successfully! ReelScript will now restart.");
-                                setTimeout(async () => {
-                                    await window.pywebview.api.exit_app();
-                                }, 1000);
-                            }
+    // Check GitHub for updates on startup (runs in background, non-blocking)
+    try {
+        const check = await window.pywebview.api.check_for_github_updates();
+        if (check && check.update_available) {
+            const btnUpdate = document.getElementById('btn-update-now');
+            if (btnUpdate) {
+                btnUpdate.style.display = 'inline-block';
+                btnUpdate.addEventListener('click', () => {
+                    const msg = `ReelScript ${check.remote_version} is available!\n\n` +
+                        `Your version: ${check.local_version}\n` +
+                        `Latest version: ${check.remote_version}\n\n` +
+                        `What's new:\n` + (check.changelog || []).map(c => `• ${c}`).join('\n') + `\n\n` +
+                        `Visit GitHub to download the latest release?`;
+                    if (confirm(msg)) {
+                        if (window.pywebview) {
+                            window.pywebview.api.open_url('https://github.com/XenoHead2/reelscript/releases');
+                        } else {
+                            window.open('https://github.com/XenoHead2/reelscript/releases', '_blank');
                         }
-                    });
-                }
+                    }
+                });
             }
-        } catch (err) {
-            console.error("Failed to check for cloud updates", err);
         }
+    } catch (err) {
+        console.error("Failed to check GitHub for updates", err);
     }
 
     initApp();
@@ -2514,6 +2496,72 @@ document.getElementById('share-configure').addEventListener('click', () => {
         saveSettings();
         alert("Share link updated successfully!");
     }
+});
+
+// --- GitHub Update Check ---
+const menuCheckGithubUpdates = document.getElementById('menu-check-github-updates');
+if (menuCheckGithubUpdates) {
+    menuCheckGithubUpdates.addEventListener('click', async () => {
+        const modal = document.getElementById('github-update-modal');
+        const checkingDiv = document.getElementById('github-update-checking');
+        const resultDiv = document.getElementById('github-update-result');
+        const bodyDiv = document.getElementById('github-update-body');
+        const githubBtn = document.getElementById('btn-goto-github');
+
+        // Reset and show modal
+        checkingDiv.style.display = 'block';
+        resultDiv.style.display = 'none';
+        githubBtn.style.display = 'none';
+        modal.style.display = 'flex';
+
+        try {
+            let result;
+            if (window.pywebview) {
+                result = await window.pywebview.api.check_for_github_updates();
+            } else {
+                bodyDiv.innerHTML = `<p style="color: var(--text-muted); font-size: 13px;">Update checking requires the desktop app.</p>`;
+                checkingDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                return;
+            }
+
+            checkingDiv.style.display = 'none';
+            resultDiv.style.display = 'block';
+
+            if (result.error) {
+                bodyDiv.innerHTML = `<p style="color: #ef4444; font-size: 13px;">⚠️ Could not reach GitHub: ${result.error}</p><p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Check your internet connection and try again.</p>`;
+            } else if (result.update_available) {
+                const changelogHtml = result.changelog && result.changelog.length
+                    ? `<ul style="margin: 10px 0 0 0; padding-left: 18px; font-size: 12px; color: var(--text-muted);">` +
+                      result.changelog.map(c => `<li style="margin-bottom: 4px;">${c}</li>`).join('') +
+                      `</ul>`
+                    : '';
+                bodyDiv.innerHTML = `
+                    <div style="background: #0d1b2a; border: 1px solid #1b8adb; border-radius: 6px; padding: 14px; margin-bottom: 12px;">
+                        <p style="font-size: 14px; font-weight: bold; color: #10b981; margin: 0 0 6px 0;">✅ Update Available!</p>
+                        <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Your version: <strong style="color:white;">${result.local_version}</strong> &nbsp;→&nbsp; Latest: <strong style="color: #10b981;">${result.remote_version}</strong></p>
+                        ${result.last_updated ? `<p style="font-size: 11px; color: var(--text-muted); margin: 4px 0 0 0;">Released: ${result.last_updated}</p>` : ''}
+                    </div>
+                    ${changelogHtml ? `<p style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">What's new:</p>${changelogHtml}` : ''}`;
+                githubBtn.style.display = 'block';
+            } else {
+                bodyDiv.innerHTML = `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 24px; margin: 0;">✅</p>
+                        <p style="font-size: 14px; font-weight: bold; color: #10b981; margin: 8px 0 4px 0;">You're up to date!</p>
+                        <p style="font-size: 12px; color: var(--text-muted);">ReelScript ${result.local_version} is the latest version.</p>
+                    </div>`;
+            }
+        } catch (e) {
+            checkingDiv.style.display = 'none';
+            resultDiv.style.display = 'block';
+            bodyDiv.innerHTML = `<p style="color: #ef4444; font-size: 13px;">Unexpected error: ${e.message}</p>`;
+        }
+    });
+}
+
+document.getElementById('btn-close-github-update')?.addEventListener('click', () => {
+    document.getElementById('github-update-modal').style.display = 'none';
 });
 
 // --- API Key Menu Logic ---

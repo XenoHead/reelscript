@@ -79,12 +79,27 @@
 
 ## 🚀 Installation
 
-> **Requires Windows**
+> **Requires Windows 10 or later**
 
-1. Download or clone this repository.
-2. **Right-click** `install.bat` and select **"Run as Administrator"**.
-   - This registers the `.rsp` file extension with Windows.
-3. A **ReelScript** shortcut will appear on your Desktop.
+### For End Users
+
+1. Download **`ReelScript_Setup.exe`** from [GitHub Releases](https://github.com/XenoHead2/reelscript/releases).
+2. Double-click it and follow the install wizard.
+3. A **ReelScript** shortcut will appear on your Desktop and in the Start Menu.
+4. `.rsp` project files are automatically associated with the app.
+
+The installer handles everything — no command line, no admin batch files.
+
+### For Developers (Building from Source)
+
+1. Install [Python 3.11+](https://www.python.org/downloads/) and [Inno Setup 6](https://jrsoftware.org/isdl.php).
+2. Clone the repo and run:
+   ```bat
+   build.bat
+   ```
+3. This produces:
+   - `dist\ReelScript.exe` — standalone executable
+   - `dist\ReelScript_Setup.exe` — full Windows installer
 
 ### First-Time Setup
 
@@ -119,8 +134,8 @@ reelscript/
 ├── styles.css              # Styling
 ├── reelscript.pyw          # Python desktop shell (pywebview)
 ├── developer_hub.pyw       # Developer tools
-├── install.bat             # Windows installer
-├── build.bat               # Build script (PyInstaller)
+├── installer.iss           # Inno Setup installer script
+├── build.bat               # One-click build + package script
 ├── requirements.txt        # Python dependencies
 ├── version.json            # Version & changelog
 ├── ReelScript_Manual.txt   # Full user manual
