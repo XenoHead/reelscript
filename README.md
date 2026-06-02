@@ -2,7 +2,9 @@
 
 **ReelScript** is a professional screenplay writing application built for Windows. It combines industry-standard formatting with real-time collaboration, AI-assisted writing, and an aggressive backup system — everything a screenwriter needs in one place.
 
-> **Current Version:** 2.8.0 &nbsp;|&nbsp; **Last Updated:** May 31, 2026
+> **Current Version:** 2.8.0 &nbsp;|&nbsp; **Last Updated:** June 2, 2026
+
+![ReelScript Screenshot](./screen.png)
 
 ---
 
@@ -46,6 +48,12 @@
 - **Spellcheck** — custom dictionary that ignores screenplay abbreviations (`INT/EXT`) and supports custom names
 - **Export to PDF** — industry-standard formatting with Title Page
 - **Export to Final Draft (.fdx)** — native format for producers and agents
+
+### 🔄 Automatic Updates
+- Checks [GitHub](https://github.com/XenoHead2/reelscript/releases) for new versions silently on every launch
+- A **⚡ UPDATE NOW** banner appears in the title bar when an update is available
+- **Customize → Check for Updates...** to check manually at any time
+- No telemetry — the only network call is a single read of `version.json` from GitHub
 
 ---
 
@@ -121,7 +129,7 @@ Before writing, set your author profile so your revisions are properly attribute
 | AI | [Google Gemini](https://ai.google.dev/) via `google-genai` |
 | PDF Export | `fpdf2` |
 | Spell Check | `pyspellchecker` |
-| Build | PyInstaller (`reelscript.spec`) |
+| Build | PyInstaller + [Inno Setup 6](https://jrsoftware.org/isdl.php) |
 
 ---
 
