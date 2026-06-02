@@ -4341,3 +4341,40 @@ window.updateCharacterNote = function(charName, noteContent) {
     appSettings.characterNotes[charName] = noteContent;
 };
 
+
+// --- Auto-Format Script ---
+document.getElementById('tools-auto-format')?.addEventListener('click', () => {
+    const paras = Array.from(editor.querySelectorAll('p'));
+    let prevType = null;
+    let changedCount = 0;
+    
+    paras.forEach((p, index) => {
+        const text = p.textContent.replace(/\u200B/g, '').trim();
+        if (!text) { prevType = null; return; }
+        
+        const upperText = text.toUpperCase();
+        let guessedType = 'action';
+        
+        if (/^(INT\.|EXT\.|INT\/EXT\.|I\/E\.|INTERIOR|EXTERIOR)/.test(upperText)) {
+            guessedType = 'scene-heading';
+        } else if (/(TO:$|FADE IN:|FADE OUT\.|SMASH CUT:|MATCH CUT:|CUT TO BLACK\.)/.test(upperText)) {
+            guessedType = 'transition';
+        } else if (text.startsWith('(') && text.endsWith(')')) {
+            guessedType = 'parenthetical';
+        } else if (text === upperText && /[A-Z]/.test(text) && text.length < 50 && !text.includes('!') && !text.includes('?')) {
+            // Mostly likely a character name if it's all caps, short, and no punctuation.
+            guessedType = 'character';
+        } else if (prevType === 'character' || prevType === 'parenthetical') {
+            guessedType = 'dialogue';
+        }
+        
+        if (!p.classList.contains(guessedType)) {
+            p.className = guessedType;
+            changedCount++;
+        }
+        prevType = guessedType;
+    });
+    
+    alert('Auto-Format complete! Fixed ' + changedCount + ' lines.');
+    saveCurrentDocument();
+});
