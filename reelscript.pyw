@@ -888,6 +888,17 @@ del "%~f0"
     def get_ai_suggestions(self, selected_text):
         return editor.get_ai_suggestions(selected_text)
 
+    def clear_format_logs(self):
+        try:
+            import json, os
+            log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'format_tools_log.json')
+            with open(log_path, 'w', encoding='utf-8') as f:
+                json.dump([], f)
+            return True
+        except Exception as e:
+            print("Error clearing format logs:", e)
+            return False
+
     def get_format_logs(self):
         try:
             import json, os
@@ -912,7 +923,7 @@ del "%~f0"
                     except:
                         logs = []
                         
-            now = datetime.datetime.utcnow()
+            now = datetime.datetime.now(datetime.timezone.utc)
             new_log = {
                 "timestamp": now.isoformat() + "Z",
                 "tool": tool_name,

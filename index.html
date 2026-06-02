@@ -151,12 +151,6 @@
                 <div class="dropdown-divider"></div>
                 <div class="dropdown-item" id="rev-manage-snapshots"><span>Manage Snapshots...</span></div>
             </div>
-        </div>
-        <div class="menu-item dropdown" id="help-menu">Help
-            <div class="dropdown-content">
-                <div class="dropdown-item" id="help-correction-logs"><span>📝 Correction Logs</span></div>
-            </div>
-        </div>
         <div class="menu-item dropdown" id="customize-menu">Customize
             <div class="dropdown-content">
                 <div class="dropdown-item" id="menu-author-profile"><span>Author Profile & Revision Color...</span></div>
@@ -168,6 +162,11 @@
                 <div class="dropdown-item" id="menu-check-github-updates"><span>🔄 Check for Updates...</span></div>
                 <div class="dropdown-divider"></div>
                 <div class="dropdown-item" id="menu-toggle-darkmode"><span><span id="dark-mode-check" style="visibility:hidden; margin-right:6px;">✔</span>Dark Mode</span></div>
+            </div>
+        </div>
+        <div class="menu-item dropdown" id="help-menu">Help
+            <div class="dropdown-content">
+                <div class="dropdown-item" id="help-correction-logs"><span>📝 Correction Logs</span></div>
             </div>
         </div>
         <div style="flex-grow: 1;"></div>
@@ -717,7 +716,10 @@
             <div id="correction-logs-content" style="flex: 1; overflow-y: auto; padding-right: 5px; font-size: 13px; line-height: 1.6; color: #d1d5db; margin-bottom: 15px;">
                 <!-- Logs dynamically loaded here -->
             </div>
-            <button id="btn-close-correction-logs" class="modal-btn" style="background-color: #4a5568; font-weight: bold; padding: 10px; width: 100%; border-radius: 6px;">Close</button>
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-clear-correction-logs" class="modal-btn" style="flex: 1; background-color: #ef4444; font-weight: bold; padding: 10px; border-radius: 6px;">Clear Logs</button>
+                <button id="btn-close-correction-logs" class="modal-btn" style="flex: 1; background-color: #4a5568; font-weight: bold; padding: 10px; border-radius: 6px;">Close</button>
+            </div>
         </div>
     </div>
 

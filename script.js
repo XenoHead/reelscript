@@ -2826,6 +2826,22 @@ if (btnCloseCorrectionLogsTop) {
     btnCloseCorrectionLogsTop.addEventListener('click', () => correctionLogsModal.style.display = 'none');
 }
 
+const btnClearCorrectionLogs = document.getElementById('btn-clear-correction-logs');
+if (btnClearCorrectionLogs) {
+    btnClearCorrectionLogs.addEventListener('click', async () => {
+        if (!window.pywebview) return;
+        const confirmClear = confirm("Are you sure you want to clear all correction logs?");
+        if (!confirmClear) return;
+        
+        try {
+            await window.pywebview.api.clear_format_logs();
+            correctionLogsContent.innerHTML = '<p style="text-align:center; color: var(--text-muted);">No correction logs found for the past 3 days.</p>';
+        } catch (e) {
+            alert("Failed to clear logs.");
+        }
+    });
+}
+
 // --- GitHub Update Check ---
 const menuCheckGithubUpdates = document.getElementById('menu-check-github-updates');
 if (menuCheckGithubUpdates) {
