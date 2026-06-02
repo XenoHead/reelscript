@@ -101,30 +101,26 @@ if (btnSort) {
         if (!activeTab) return;
         
         const target = activeTab.getAttribute('data-target');
-        if (target === 'corkboard') {
-            initCorkboard();
-        } else if (target === 'character-bible') {
-            initCharacterBible();
-        } else if (target === 'freeform') {
-            const canvas = document.getElementById('freeform-canvas');
-            const cards = Array.from(canvas.querySelectorAll('.card'));
-            let x = 50;
-            let y = 50;
-            cards.forEach(card => {
-                card.style.left = x + 'px';
-                card.style.top = y + 'px';
-                x += 220;
-                if (x > window.innerWidth - 250) {
-                    x = 50;
-                    y += 150;
-                }
-            });
-        }
+        const canvas = document.getElementById(target + '-canvas');
+        if (!canvas) return;
         
-        // Re-apply collapsed state if needed
-        if (cardsCollapsed) {
-            document.querySelectorAll('.card').forEach(card => card.classList.add('collapsed'));
-        }
+        const cards = Array.from(canvas.querySelectorAll('.card'));
+        let x = 50;
+        let y = 50;
+        
+        let yPadding = 150;
+        if (cardsCollapsed) yPadding = 50;
+        else if (target === 'character-bible') yPadding = 200;
+        
+        cards.forEach(card => {
+            card.style.left = x + 'px';
+            card.style.top = y + 'px';
+            x += 220;
+            if (x > window.innerWidth - 250) {
+                x = 50;
+                y += yPadding;
+            }
+        });
     });
 }
 
@@ -135,17 +131,18 @@ function initCorkboard() {
     
     let x = 50;
     let y = 50;
-    const padding = 220;
+    const yPadding = cardsCollapsed ? 50 : 150;
     
     scriptData.scenes.forEach((scene, index) => {
         const titleText = `Scene ${scene.id}: ${scene.name}`;
         const card = createCard(titleText, scene.characters.join(', ') || 'No characters detected.', x, y, false, scene.notes, 'scene', scene.id);
+        if (cardsCollapsed) card.classList.add('collapsed');
         canvas.appendChild(card);
         
-        x += padding;
+        x += 220;
         if (x > window.innerWidth - 250) {
             x = 50;
-            y += 150;
+            y += yPadding;
         }
     });
 }
@@ -157,7 +154,7 @@ function initCharacterBible() {
     
     let x = 50;
     let y = 50;
-    const padding = 220;
+    const yPadding = cardsCollapsed ? 50 : 200;
     
     scriptData.characters.forEach((char) => {
         const titleText = char.name;
@@ -171,12 +168,13 @@ function initCharacterBible() {
         const card = createCard(titleText, '', x, y, false, char.notes, 'character', char.name);
         card.querySelector('.card-body').innerHTML = autoStats;
         card.classList.add('character-card');
+        if (cardsCollapsed) card.classList.add('collapsed');
         canvas.appendChild(card);
         
-        x += padding;
+        x += 220;
         if (x > window.innerWidth - 250) {
             x = 50;
-            y += 200; // Character cards are taller
+            y += yPadding;
         }
     });
 }
