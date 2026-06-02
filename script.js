@@ -4342,44 +4342,37 @@ window.updateCharacterNote = function(charName, noteContent) {
 };
 
 
-// --- Auto-Format Script ---
-document.getElementById('tools-auto-format')?.addEventListener('click', () => {
+// --- Fix Color Maps ---
+document.getElementById('tools-fix-colors')?.addEventListener('click', () => {
     const paras = Array.from(editor.querySelectorAll('p'));
-    let prevType = null;
     let changedCount = 0;
     
-    paras.forEach((p, index) => {
-        const text = p.textContent.replace(/\u200B/g, '').trim();
-        if (!text) { prevType = null; return; }
+    paras.forEach((p) => {
+        let changed = false;
         
-        const upperText = text.toUpperCase();
-        let guessedType = 'action';
-        
-        if (/^(INT\.|EXT\.|INT\/EXT\.|I\/E\.|INTERIOR|EXTERIOR)/.test(upperText)) {
-            guessedType = 'scene-heading';
-        } else if (/(TO:$|FADE IN:|FADE OUT\.|SMASH CUT:|MATCH CUT:|CUT TO BLACK\.)/.test(upperText)) {
-            guessedType = 'transition';
-        } else if (text.startsWith('(') && text.endsWith(')')) {
-            guessedType = 'parenthetical';
-            // ReelScript uses CSS for brackets, so we remove physical ones to prevent doubling
-            p.textContent = text.substring(1, text.length - 1).trim();
-        } else if (p.classList.contains('parenthetical') && (prevType === 'character' || prevType === 'parenthetical')) {
-            // Natively formatted parentheticals don't have physical brackets in the DOM
-            guessedType = 'parenthetical';
-        } else if (text === upperText && /[A-Z]/.test(text) && text.length < 50 && !text.includes('!') && !text.includes('?')) {
-            // Mostly likely a character name if it's all caps, short, and no punctuation.
-            guessedType = 'character';
-        } else if (prevType === 'character' || prevType === 'parenthetical') {
-            guessedType = 'dialogue';
+        // Strip inline styles on the paragraph itself
+        if (p.style.color || p.style.backgroundColor) {
+            p.style.color = '';
+            p.style.backgroundColor = '';
+            changed = true;
         }
         
-        if (!p.classList.contains(guessedType)) {
-            p.className = guessedType;
-            changedCount++;
-        }
-        prevType = guessedType;
+        // Strip inline styles and font color tags from children
+        p.querySelectorAll('*').forEach(child => {
+            if (child.style && (child.style.color || child.style.backgroundColor)) {
+                child.style.color = '';
+                child.style.backgroundColor = '';
+                changed = true;
+            }
+            if (child.tagName === 'FONT' && child.hasAttribute('color')) {
+                child.removeAttribute('color');
+                changed = true;
+            }
+        });
+        
+        if (changed) changedCount++;
     });
     
-    alert('Auto-Format complete! Fixed ' + changedCount + ' lines.');
+    alert('Color Maps fixed! Stripped inline colors from ' + changedCount + ' line(s) to restore standard block formatting.');
     saveCurrentDocument();
 });
