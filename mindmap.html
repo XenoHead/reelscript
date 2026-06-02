@@ -16,6 +16,11 @@
     </div>
 
     <div id="content">
+        <div class="global-toolbar">
+            <button id="btn-toggle-collapse">Toggle Size</button>
+            <button id="btn-sort-cards">Reset Layout</button>
+            <button id="add-sticky-btn" style="display:none;">+ Add Note</button>
+        </div>
         <!-- Corkboard View -->
         <div id="corkboard" class="view active">
             <div id="corkboard-canvas"></div>
@@ -28,9 +33,6 @@
 
         <!-- Freeform Board View -->
         <div id="freeform" class="view">
-            <div id="freeform-toolbar">
-                <button id="add-sticky-btn">+ Add Note</button>
-            </div>
             <div id="freeform-canvas"></div>
         </div>
     </div>

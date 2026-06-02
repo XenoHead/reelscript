@@ -124,15 +124,17 @@ body, html {
     color: #444;
 }
 
-/* Freeform specific */
-#freeform-toolbar {
+/* Toolbar */
+.global-toolbar {
     padding: 10px;
     background-color: var(--bg-surface);
     border-bottom: 1px solid #333;
     z-index: 10;
+    display: flex;
+    gap: 10px;
 }
 
-#freeform-toolbar button {
+.global-toolbar button {
     background-color: var(--accent);
     color: white;
     border: none;
@@ -142,9 +144,21 @@ body, html {
     font-weight: 500;
 }
 
-#freeform-toolbar button:hover {
+.global-toolbar button:hover {
     background-color: #005A9E;
 }
+
+/* Collapsed Cards */
+.card.collapsed {
+    min-height: unset;
+    height: auto;
+}
+.card.collapsed .card-body,
+.card.collapsed .card-notes {
+    display: none;
+}
+
+/* Freeform specific */
 
 .freeform-card .card-title {
     outline: none;

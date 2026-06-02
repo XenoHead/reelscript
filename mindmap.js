@@ -66,8 +66,57 @@ document.querySelectorAll('.tab').forEach(tab => {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         
         tab.classList.add('active');
-        document.getElementById(tab.getAttribute('data-target')).classList.add('active');
+        const target = tab.getAttribute('data-target');
+        document.getElementById(target).classList.add('active');
+        
+        if (target === 'freeform') {
+            document.getElementById('add-sticky-btn').style.display = 'inline-block';
+        } else {
+            document.getElementById('add-sticky-btn').style.display = 'none';
+        }
     });
+});
+
+// --- Toolbar Logic ---
+let cardsCollapsed = false;
+
+document.getElementById('btn-toggle-collapse')?.addEventListener('click', () => {
+    cardsCollapsed = !cardsCollapsed;
+    document.querySelectorAll('.card').forEach(card => {
+        if (cardsCollapsed) {
+            card.classList.add('collapsed');
+        } else {
+            card.classList.remove('collapsed');
+        }
+    });
+});
+
+document.getElementById('btn-sort-cards')?.addEventListener('click', () => {
+    const activeTab = document.querySelector('.tab.active').getAttribute('data-target');
+    if (activeTab === 'corkboard') {
+        initCorkboard();
+    } else if (activeTab === 'character-bible') {
+        initCharacterBible();
+    } else if (activeTab === 'freeform') {
+        const canvas = document.getElementById('freeform-canvas');
+        const cards = Array.from(canvas.querySelectorAll('.card'));
+        let x = 50;
+        let y = 50;
+        cards.forEach(card => {
+            card.style.left = x + 'px';
+            card.style.top = y + 'px';
+            x += 220;
+            if (x > window.innerWidth - 250) {
+                x = 50;
+                y += 150;
+            }
+        });
+    }
+    
+    // Re-apply collapsed state if needed
+    if (cardsCollapsed) {
+        document.querySelectorAll('.card').forEach(card => card.classList.add('collapsed'));
+    }
 });
 
 // --- Corkboard Logic ---
