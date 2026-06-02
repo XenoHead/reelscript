@@ -41,7 +41,11 @@
             <div class="dropdown-content">
                 <div class="dropdown-item" id="file-menu-new"><span>New Project</span></div>
                 <div class="dropdown-item" id="file-menu-open"><span>Open Project</span><span class="hotkey-text" data-hotkey-display="open-project">Ctrl-O</span></div>
-                <div class="dropdown-item"><span>Open Recent &gt;</span></div>
+                <div class="dropdown-item has-submenu" id="file-menu-recent">
+                    <span>Open Recent &gt;</span>
+                    <div class="submenu" id="recent-projects-list">
+                    </div>
+                </div>
                 <div class="dropdown-divider"></div>
                 <div class="dropdown-item" id="file-menu-save"><span>Save Project</span><span class="hotkey-text" data-hotkey-display="save-project">Ctrl-S</span></div>
                 <div class="dropdown-item" id="file-menu-save-as"><span>Save Project As...</span></div>

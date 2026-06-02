@@ -575,8 +575,7 @@ function applySettingsToUI() {
     }
     startAutoSaveInterval();
 
-    // If updateRecentProjectsUI is meant to be implemented later, wrap it so it doesn't cause errors
-    if (typeof updateRecentProjectsUI === 'function') updateRecentProjectsUI();
+    updateRecentProjectsUI();
 
     const projectNameDisplay = document.getElementById('project-name-display');
     if (projectNameDisplay) {
@@ -671,11 +670,77 @@ function updateProjectName(newName) {
 }
 
 function addToRecent(filepath) {
-    // Placeholder function to prevent reference errors, to be expanded later
     if (!appSettings.recentProjects) appSettings.recentProjects = [];
-    if (!appSettings.recentProjects.includes(filepath)) {
-        appSettings.recentProjects.unshift(filepath);
+    
+    // Remove if already exists so we can move it to the top
+    const index = appSettings.recentProjects.indexOf(filepath);
+    if (index > -1) {
+        appSettings.recentProjects.splice(index, 1);
     }
+    
+    appSettings.recentProjects.unshift(filepath);
+    
+    if (appSettings.recentProjects.length > 10) {
+        appSettings.recentProjects = appSettings.recentProjects.slice(0, 10);
+    }
+    
+    updateRecentProjectsUI();
+}
+
+function updateRecentProjectsUI() {
+    const list = document.getElementById('recent-projects-list');
+    if (!list) return;
+    list.innerHTML = '';
+    
+    if (!appSettings.recentProjects || appSettings.recentProjects.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'dropdown-item';
+        empty.style.color = 'var(--text-muted)';
+        empty.style.cursor = 'default';
+        empty.innerHTML = '<span>No recent projects</span>';
+        list.appendChild(empty);
+        return;
+    }
+    
+    appSettings.recentProjects.forEach(filepath => {
+        let filename = filepath;
+        if (filepath.includes('\\')) filename = filepath.split('\\').pop();
+        else if (filepath.includes('/')) filename = filepath.split('/').pop();
+        
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        item.title = filepath;
+        item.innerHTML = `<span>${filename}</span>`;
+        item.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (window.pywebview) {
+                const result = await window.pywebview.api.open_recent_project(filepath);
+                if (result && result.data) {
+                    try {
+                        const parsed = JSON.parse(result.data);
+                        if (parsed['Private Pad'] !== undefined) {
+                            parsed['Revision Notes'] = parsed['Private Pad'];
+                            delete parsed['Private Pad'];
+                        }
+                        appSettings.projectDocuments = parsed;
+                        currentDocument = Object.keys(parsed)[0] || 'Default Document';
+                        appSettings.currentProjectFile = result.filepath;
+                        const finalName = filename.replace(/\.(rsp|ksp)$/i, '');
+                        updateProjectName(finalName);
+                        saveSettings();
+                        initializeEnvironment();
+                        addToRecent(result.filepath);
+                        document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('open'));
+                    } catch (err) { alert("Invalid project file."); }
+                } else if (result && result.error) {
+                    alert(result.error);
+                }
+            } else {
+                alert("Native opening requires the Python app wrapper.");
+            }
+        });
+        list.appendChild(item);
+    });
 }
 
 function saveSettings() {
