@@ -2734,6 +2734,92 @@ document.getElementById('share-configure').addEventListener('click', async () =>
     }
 });
 
+// --- Correction Logs Modal Logic ---
+const correctionLogsModal = document.getElementById('correction-logs-modal');
+const btnCloseCorrectionLogs = document.getElementById('btn-close-correction-logs');
+const btnCloseCorrectionLogsTop = document.getElementById('btn-close-correction-logs-top');
+const correctionLogsContent = document.getElementById('correction-logs-content');
+
+if (document.getElementById('help-correction-logs')) {
+    document.getElementById('help-correction-logs').addEventListener('click', async () => {
+        if (!window.pywebview) {
+            alert("This feature requires the native app wrapper.");
+            return;
+        }
+        
+        correctionLogsContent.innerHTML = '<p style="text-align:center;">Loading logs...</p>';
+        correctionLogsModal.style.display = 'flex';
+        
+        try {
+            const logs = await window.pywebview.api.get_format_logs();
+            if (!logs || logs.length === 0) {
+                correctionLogsContent.innerHTML = '<p style="text-align:center; color: var(--text-muted);">No correction logs found for the past 3 days.</p>';
+                return;
+            }
+            if (logs.length > 0 && logs[0].error) {
+                correctionLogsContent.innerHTML = `<p style="color:#ef4444;">Error loading logs: ${logs[0].error}</p>`;
+                return;
+            }
+            
+            // Reverse so newest is on top
+            logs.reverse();
+            
+            let html = '';
+            logs.forEach(log => {
+                const date = new Date(log.timestamp);
+                const dateString = date.toLocaleString();
+                
+                html += `
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid #36424e; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #36424e; padding-bottom: 6px;">
+                            <strong style="color: #60a5fa;">🔧 Tool: ${log.tool || 'Unknown Tool'}</strong>
+                            <span style="color: #9ca3af; font-size: 11px;">${dateString}</span>
+                        </div>
+                `;
+                
+                if (log.changes && log.changes.length > 0) {
+                    html += `<table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                        <thead>
+                            <tr style="text-align: left; color: #d1d5db; border-bottom: 1px solid #4a5568;">
+                                <th style="padding: 4px;">Context</th>
+                                <th style="padding: 4px;">Issue</th>
+                                <th style="padding: 4px;">Fix</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                    
+                    log.changes.forEach(change => {
+                        html += `
+                            <tr style="border-bottom: 1px dotted #36424e;">
+                                <td style="padding: 6px 4px; color: #9ca3af; font-style: italic;">${change.context || '-'}</td>
+                                <td style="padding: 6px 4px; color: #f87171;">${change.issue || '-'}</td>
+                                <td style="padding: 6px 4px; color: #34d399;">${change.fix || '-'}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `</tbody></table>`;
+                } else {
+                    html += `<em style="color: #6b7280; font-size: 12px;">No specific changes recorded.</em>`;
+                }
+                
+                html += `</div>`;
+            });
+            
+            correctionLogsContent.innerHTML = html;
+        } catch (e) {
+            correctionLogsContent.innerHTML = `<p style="color:#ef4444;">Failed to load logs.</p>`;
+        }
+    });
+}
+
+if (btnCloseCorrectionLogs) {
+    btnCloseCorrectionLogs.addEventListener('click', () => correctionLogsModal.style.display = 'none');
+}
+if (btnCloseCorrectionLogsTop) {
+    btnCloseCorrectionLogsTop.addEventListener('click', () => correctionLogsModal.style.display = 'none');
+}
+
 // --- GitHub Update Check ---
 const menuCheckGithubUpdates = document.getElementById('menu-check-github-updates');
 if (menuCheckGithubUpdates) {

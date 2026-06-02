@@ -888,6 +888,18 @@ del "%~f0"
     def get_ai_suggestions(self, selected_text):
         return editor.get_ai_suggestions(selected_text)
 
+    def get_format_logs(self):
+        try:
+            import json, os
+            log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'format_tools_log.json')
+            if os.path.exists(log_path):
+                with open(log_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            return []
+        except Exception as e:
+            print("Error reading format logs:", e)
+            return []
+
     def log_tool_action(self, tool_name, changes):
         try:
             import json, datetime

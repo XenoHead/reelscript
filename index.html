@@ -151,6 +151,11 @@
                 <div class="dropdown-item" id="rev-manage-snapshots"><span>Manage Snapshots...</span></div>
             </div>
         </div>
+        <div class="menu-item dropdown" id="help-menu">Help
+            <div class="dropdown-content">
+                <div class="dropdown-item" id="help-correction-logs"><span>📝 Correction Logs</span></div>
+            </div>
+        </div>
         <div class="menu-item dropdown" id="customize-menu">Customize
             <div class="dropdown-content">
                 <div class="dropdown-item" id="menu-author-profile"><span>Author Profile & Revision Color...</span></div>
@@ -698,6 +703,20 @@
                 <button id="btn-cloud-load-without-saving" class="modal-btn" style="background-color: #f59e0b; font-weight: bold; padding: 10px 16px; font-size: 13px;">⚡ Load Without Saving</button>
                 <button id="btn-cloud-load-cancel" class="modal-btn" style="background-color: #4a5568; padding: 8px 16px; font-size: 13px;">Cancel</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Correction Logs Modal -->
+    <div id="correction-logs-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="width: 700px; max-width: 90vw; border-radius: 12px; border: 1px solid #36424e; background: var(--topbar-bg); box-shadow: 0 20px 40px rgba(0,0,0,0.6); display: flex; flex-direction: column; max-height: 85vh;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #36424e; padding-bottom: 10px;">
+                <h2 style="margin: 0; border: none; padding: 0; font-size: 18px; font-weight: bold; color: white;">📝 Auto-Format Correction Logs</h2>
+                <button id="btn-close-correction-logs-top" style="background: none; border: none; color: #a0aec0; cursor: pointer; font-size: 20px;">×</button>
+            </div>
+            <div id="correction-logs-content" style="flex: 1; overflow-y: auto; padding-right: 5px; font-size: 13px; line-height: 1.6; color: #d1d5db; margin-bottom: 15px;">
+                <!-- Logs dynamically loaded here -->
+            </div>
+            <button id="btn-close-correction-logs" class="modal-btn" style="background-color: #4a5568; font-weight: bold; padding: 10px; width: 100%; border-radius: 6px;">Close</button>
         </div>
     </div>
 
