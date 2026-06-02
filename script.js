@@ -622,6 +622,24 @@ function applySettingsToUI() {
     }
     document.body.classList.toggle('show-scene-numbers', appSettings.showSceneNumbers);
 
+    const saveLocationCheck = document.getElementById('save-location-check');
+    if (saveLocationCheck) {
+        saveLocationCheck.style.visibility = appSettings.showSaveLocation ? 'visible' : 'hidden';
+    }
+    const saveLocationText = document.getElementById('status-save-location');
+    const saveLocationDiv = document.getElementById('status-save-location-divider');
+    if (saveLocationText && saveLocationDiv) {
+        if (appSettings.showSaveLocation && appSettings.currentProjectFile) {
+            saveLocationText.textContent = appSettings.currentProjectFile;
+            saveLocationText.title = appSettings.currentProjectFile;
+            saveLocationText.style.display = 'block';
+            saveLocationDiv.style.display = 'block';
+        } else {
+            saveLocationText.style.display = 'none';
+            saveLocationDiv.style.display = 'none';
+        }
+    }
+
     const colors = appSettings.elementColors || {};
     document.documentElement.style.setProperty('--color-scene', colors.scene || '');
     document.documentElement.style.setProperty('--color-action', colors.action || '');
@@ -902,7 +920,8 @@ async function handleSave() {
             // Already has a file, just overwrite it
             const result = await window.pywebview.api.save_project(projectData, appSettings.currentProjectFile);
             if (result && !result.startsWith("Error")) {
-                alert("Project saved successfully!");
+                alert("Project saved successfully!\n\nLocation: " + appSettings.currentProjectFile);
+                applySettingsToUI();
             } else if (result) {
                 alert(result);
             }
@@ -927,7 +946,8 @@ async function handleSaveAs() {
             const filename = result.split('\\').pop().split('/').pop().replace(/\.(rsp|ksp)$/i, '');
             updateProjectName(filename);
             addToRecent(result);
-            alert("Project saved as successfully!");
+            alert("Project saved as successfully!\n\nLocation: " + result);
+            applySettingsToUI();
         } else if (result) {
             alert(result);
         }
@@ -2717,12 +2737,28 @@ if (colorCodesBtn) {
 
 function toggleSceneNumbers() {
     appSettings.showSceneNumbers = !appSettings.showSceneNumbers;
-    applySettingsToUI();
     saveSettings();
+    applySettingsToUI();
+    updateLinesUI();
 }
+
 const sceneNumbersBtn = document.getElementById('view-toggle-scene-numbers');
 if (sceneNumbersBtn) {
-    sceneNumbersBtn.addEventListener('click', toggleSceneNumbers);
+    sceneNumbersBtn.addEventListener('click', () => {
+        appSettings.showSceneNumbers = !appSettings.showSceneNumbers;
+        saveSettings();
+        applySettingsToUI();
+        updateLinesUI();
+    });
+}
+
+const saveLocationBtn = document.getElementById('view-toggle-save-location');
+if (saveLocationBtn) {
+    saveLocationBtn.addEventListener('click', () => {
+        appSettings.showSaveLocation = !appSettings.showSaveLocation;
+        saveSettings();
+        applySettingsToUI();
+    });
 }
 
 function toggleDialogueFilter() {
