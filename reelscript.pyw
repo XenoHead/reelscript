@@ -67,7 +67,11 @@ active_window = None
 class BackendAPI:
     def __init__(self):
         # Set up a default backup directory in the user's Documents folder
-        self.backup_dir = os.path.join(os.path.expanduser("~"), "Documents", "ReelScript")
+        self.app_data_dir = os.path.join(os.path.expanduser("~"), "Documents", "ReelScript")
+        self.save_directory = ""
+        self.backup_dir = os.path.join(self.app_data_dir, "Backups")
+        self.mindmap_data = {}
+        
         if not os.path.exists(self.backup_dir):
             os.makedirs(self.backup_dir)
             
@@ -184,7 +188,7 @@ print(file)
                 with open(filepath, "r", encoding="utf-8") as f:
                     return {'filepath': filepath, 'data': f.read()}
             except Exception as e:
-                return {'error': str(e)}
+                return {'error': 'File not found.'}
         return {'error': 'File not found.'}
 
     def choose_directory(self):
@@ -603,6 +607,21 @@ print(file)
             return f"Exported to: {filepath}"
         except Exception as e:
             return f"Export Error: {str(e)}"
+            
+    def set_mindmap_data(self, data):
+        self.mindmap_data = data
+        return "OK"
+        
+    def get_mindmap_data(self):
+        return self.mindmap_data
+        
+    def open_mindmap_window(self):
+        try:
+            mindmap_html = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mindmap.html')
+            webview.create_window('Mind Map & Corkboard', url=mindmap_html, js_api=self, width=1024, height=768)
+            return "OK"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     def load_latest_cloud(self, cloud_dir, project_name):
         if not cloud_dir or not os.path.exists(cloud_dir):

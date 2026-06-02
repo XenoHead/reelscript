@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReelScript - Mind Map</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="mindmap.css">
+    <!-- vis-network for Character Map -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+</head>
+<body>
+    <div id="sidebar">
+        <div class="sidebar-header">Mind Map</div>
+        <div class="tab active" data-target="corkboard">Scene Corkboard</div>
+        <div class="tab" data-target="character-map">Character Map</div>
+        <div class="tab" data-target="freeform">Freeform Board</div>
+    </div>
+
+    <div id="content">
+        <!-- Corkboard View -->
+        <div id="corkboard" class="view active">
+            <div id="corkboard-canvas"></div>
+        </div>
+
+        <!-- Character Map View -->
+        <div id="character-map" class="view">
+            <div id="network-canvas"></div>
+        </div>
+
+        <!-- Freeform Board View -->
+        <div id="freeform" class="view">
+            <div id="freeform-toolbar">
+                <button id="add-sticky-btn">+ Add Note</button>
+            </div>
+            <div id="freeform-canvas"></div>
+        </div>
+    </div>
+
+    <script src="mindmap.js"></script>
+</body>
+</html>

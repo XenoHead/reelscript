@@ -420,6 +420,46 @@ document.querySelectorAll('.dropdown').forEach(menu => {
 });
 document.addEventListener('click', () => { document.querySelectorAll('.dropdown').forEach(m => m.classList.remove('open')); });
 
+const mindMapBtn = document.getElementById('view-mindmap');
+if (mindMapBtn) {
+    mindMapBtn.addEventListener('click', async () => {
+        if (!window.pywebview) {
+            alert("Mind Map requires the native app wrapper.");
+            return;
+        }
+        
+        // Extract scenes and characters to pass to the mind map
+        const data = {
+            scenes: [],
+            characters: []
+        };
+        
+        const pars = document.querySelectorAll('#editor p');
+        let currentScene = null;
+        
+        pars.forEach(p => {
+            const text = p.textContent.replace(/\u200B/g, '').trim();
+            if (!text) return;
+            
+            if (p.classList.contains('scene-heading')) {
+                currentScene = { name: text, characters: [] };
+                data.scenes.push(currentScene);
+            } else if (p.classList.contains('character') && currentScene) {
+                const charName = text.replace(/\(.*?\)/g, '').trim();
+                if (charName && !currentScene.characters.includes(charName)) {
+                    currentScene.characters.push(charName);
+                }
+                if (charName && !data.characters.includes(charName)) {
+                    data.characters.push(charName);
+                }
+            }
+        });
+        
+        await window.pywebview.api.set_mindmap_data(data);
+        await window.pywebview.api.open_mindmap_window();
+    });
+}
+
 function updateHotkeyDisplay() {
     document.querySelectorAll('[data-hotkey-display]').forEach(el => {
         const action = el.getAttribute('data-hotkey-display');
