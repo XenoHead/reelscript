@@ -2364,7 +2364,7 @@ async function executeCloudLoad() {
     syncText.textContent = 'Loading latest from cloud...';
 
     const projectName = appSettings.projectName || "Untitled Project";
-    const result = await window.pywebview.api.load_latest_cloud(appSettings.cloudDir, projectName);
+    const result = await window.pywebview.api.load_latest_cloud(appSettings.sharedFolderRoot, projectName);
 
     if (result.error) {
         alert(result.error);
@@ -2410,8 +2410,8 @@ if (shareLoadLatest) {
             return;
         }
 
-        if (!appSettings.cloudDir) {
-            alert("Please configure a Cloud Backup folder (e.g., your Google Drive folder) in 'Manage Backups & Auto-Save' first.");
+        if (!appSettings.sharedFolderRoot) {
+            alert("Please configure a Shared Folder root in 'Share -> Configure Shared Folder...' first.");
             return;
         }
 
@@ -2459,8 +2459,8 @@ if (shareSaveLatest) {
             return;
         }
 
-        if (!appSettings.cloudDir) {
-            alert("Please configure a Cloud Backup folder (e.g., your Google Drive folder) in 'Manage Backups & Auto-Save' first.");
+        if (!appSettings.sharedFolderRoot) {
+            alert("Please configure a Shared Folder root in 'Share -> Configure Shared Folder...' first.");
             return;
         }
 
@@ -2471,7 +2471,7 @@ if (shareSaveLatest) {
         syncDot.style.backgroundColor = '#f59e0b';
         syncText.textContent = 'Saving latest to cloud...';
 
-        const result = await window.pywebview.api.save_latest_cloud(appSettings.cloudDir, projectName, projectData);
+        const result = await window.pywebview.api.save_latest_cloud(appSettings.sharedFolderRoot, projectName, projectData);
 
         if (result.error) {
             alert(result.error);
@@ -2544,25 +2544,30 @@ if (changelogModal) {
 }
 
 document.getElementById('share-gdrive').addEventListener('click', () => {
-    const link = appSettings.sharedFolderLink;
-    if (!link) {
-        alert("No shared folder link configured.\n\nGo to Share → Configure Shared Folder to set one.");
+    const root = appSettings.sharedFolderRoot;
+    if (!root) {
+        alert("No shared folder root configured.\n\nGo to Share → Configure Shared Folder to set one.");
         return;
     }
+    const safeName = (appSettings.projectName || "Untitled Project").replace(/[\\/:*?"<>|]/g, '');
+    const projectFolder = root + '\\\\' + safeName;
     if (window.pywebview) {
-        window.pywebview.api.open_url(link);
+        window.pywebview.api.open_url(projectFolder);
     } else {
-        window.open(link, '_blank');
+        alert("Requires the Python backend.");
     }
 });
 
-document.getElementById('share-configure').addEventListener('click', () => {
-    const currentLink = appSettings.sharedFolderLink || '';
-    const newLink = prompt("Enter your Google Drive / Shared Folder link:", currentLink);
-    if (newLink !== null && newLink.trim() !== "") {
-        appSettings.sharedFolderLink = newLink.trim();
-        saveSettings();
-        alert("Share link updated successfully!");
+document.getElementById('share-configure').addEventListener('click', async () => {
+    if (window.pywebview) {
+        const folder = await window.pywebview.api.choose_directory();
+        if (folder) {
+            appSettings.sharedFolderRoot = folder;
+            saveSettings();
+            alert("Shared root folder updated successfully!");
+        }
+    } else {
+        alert("Native directory selection requires the Python app wrapper.");
     }
 });
 

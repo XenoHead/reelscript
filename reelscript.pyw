@@ -263,10 +263,14 @@ print(file)
                 actual_local = local_path
                 
             try:
-                local_filepath = os.path.join(actual_local, filename)
+                project_local_dir = os.path.join(actual_local, safe_name)
+                if not os.path.exists(project_local_dir):
+                    os.makedirs(project_local_dir)
+                    
+                local_filepath = os.path.join(project_local_dir, filename)
                 with open(local_filepath, "w", encoding="utf-8") as f:
                     f.write(content)
-                self._enforce_backup_limit(actual_local, prefix, max_backups)
+                self._enforce_backup_limit(project_local_dir, prefix, max_backups)
                 messages.append("Local")
             except Exception:
                 pass
