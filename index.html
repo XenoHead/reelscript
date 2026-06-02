@@ -108,17 +108,30 @@
         </div>
         <div class="menu-item dropdown" id="tools-menu">Tools
             <div class="dropdown-content">
-                <div class="dropdown-item" id="tools-rename-character"><span>Rename Character</span></div>
-                <div class="dropdown-item" id="tools-check-spelling"><span>Check Spelling</span></div>
-                <div class="dropdown-item" id="tools-filter-dialogue"><span><span id="filter-dialogue-check" style="visibility:hidden; margin-right:6px;">✔</span>Dialogue Filter</span></div>
-                <div class="dropdown-item" id="tools-filter-non-dialogue"><span><span id="filter-non-dialogue-check" style="visibility:hidden; margin-right:6px;">✔</span>Non-Dialogue Filter</span></div>
-                <div class="dropdown-item" id="tools-char-filter"><span>Character Filter</span></div>
-                <div class="dropdown-item" id="tools-clean-spaces"><span>Clean Spacing</span></div>
-                <div class="dropdown-item" id="tools-cut-double-parens"><span>Cut Double ( )</span></div>
-                <div class="dropdown-divider"></div>
-                <div class="dropdown-item" id="tools-fix-char-names"><span>Fix Char Names</span></div>
-                <div class="dropdown-item" id="tools-fix-parenths"><span>Fix Parenths</span></div>
-                <div class="dropdown-item"><span>List of Shots</span></div>
+                <div class="dropdown-item has-submenu">
+                    <span>Text ▶</span>
+                    <div class="submenu">
+                        <div class="dropdown-item" id="tools-check-spelling"><span>Check Spelling</span></div>
+                        <div class="dropdown-item" id="tools-clean-spaces"><span>Clean Spacing</span></div>
+                        <div class="dropdown-item" id="tools-cut-double-parens"><span>Cut Double ( )</span></div>
+                        <div class="dropdown-item" id="tools-fix-parenths"><span>Fix Parenths</span></div>
+                    </div>
+                </div>
+                <div class="dropdown-item has-submenu">
+                    <span>Filters ▶</span>
+                    <div class="submenu">
+                        <div class="dropdown-item" id="tools-filter-dialogue"><span><span id="filter-dialogue-check" style="visibility:hidden; margin-right:6px;">✔</span>Dialogue Filter</span></div>
+                        <div class="dropdown-item" id="tools-filter-non-dialogue"><span><span id="filter-non-dialogue-check" style="visibility:hidden; margin-right:6px;">✔</span>Non-Dialogue Filter</span></div>
+                        <div class="dropdown-item" id="tools-char-filter"><span>Character Filter</span></div>
+                    </div>
+                </div>
+                <div class="dropdown-item has-submenu">
+                    <span>Char ▶</span>
+                    <div class="submenu">
+                        <div class="dropdown-item" id="tools-rename-character"><span>Rename Character</span></div>
+                        <div class="dropdown-item" id="tools-fix-char-names"><span>Fix Char Names</span></div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="menu-item dropdown" id="reports-menu">Reports
