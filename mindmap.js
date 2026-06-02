@@ -80,44 +80,53 @@ document.querySelectorAll('.tab').forEach(tab => {
 // --- Toolbar Logic ---
 let cardsCollapsed = false;
 
-document.getElementById('btn-toggle-collapse')?.addEventListener('click', () => {
-    cardsCollapsed = !cardsCollapsed;
-    document.querySelectorAll('.card').forEach(card => {
-        if (cardsCollapsed) {
-            card.classList.add('collapsed');
-        } else {
-            card.classList.remove('collapsed');
-        }
-    });
-});
-
-document.getElementById('btn-sort-cards')?.addEventListener('click', () => {
-    const activeTab = document.querySelector('.tab.active').getAttribute('data-target');
-    if (activeTab === 'corkboard') {
-        initCorkboard();
-    } else if (activeTab === 'character-bible') {
-        initCharacterBible();
-    } else if (activeTab === 'freeform') {
-        const canvas = document.getElementById('freeform-canvas');
-        const cards = Array.from(canvas.querySelectorAll('.card'));
-        let x = 50;
-        let y = 50;
-        cards.forEach(card => {
-            card.style.left = x + 'px';
-            card.style.top = y + 'px';
-            x += 220;
-            if (x > window.innerWidth - 250) {
-                x = 50;
-                y += 150;
+const btnToggle = document.getElementById('btn-toggle-collapse');
+if (btnToggle) {
+    btnToggle.addEventListener('click', () => {
+        cardsCollapsed = !cardsCollapsed;
+        document.querySelectorAll('.card').forEach(card => {
+            if (cardsCollapsed) {
+                card.classList.add('collapsed');
+            } else {
+                card.classList.remove('collapsed');
             }
         });
-    }
-    
-    // Re-apply collapsed state if needed
-    if (cardsCollapsed) {
-        document.querySelectorAll('.card').forEach(card => card.classList.add('collapsed'));
-    }
-});
+    });
+}
+
+const btnSort = document.getElementById('btn-sort-cards');
+if (btnSort) {
+    btnSort.addEventListener('click', () => {
+        const activeTab = document.querySelector('.tab.active');
+        if (!activeTab) return;
+        
+        const target = activeTab.getAttribute('data-target');
+        if (target === 'corkboard') {
+            initCorkboard();
+        } else if (target === 'character-bible') {
+            initCharacterBible();
+        } else if (target === 'freeform') {
+            const canvas = document.getElementById('freeform-canvas');
+            const cards = Array.from(canvas.querySelectorAll('.card'));
+            let x = 50;
+            let y = 50;
+            cards.forEach(card => {
+                card.style.left = x + 'px';
+                card.style.top = y + 'px';
+                x += 220;
+                if (x > window.innerWidth - 250) {
+                    x = 50;
+                    y += 150;
+                }
+            });
+        }
+        
+        // Re-apply collapsed state if needed
+        if (cardsCollapsed) {
+            document.querySelectorAll('.card').forEach(card => card.classList.add('collapsed'));
+        }
+    });
+}
 
 // --- Corkboard Logic ---
 function initCorkboard() {

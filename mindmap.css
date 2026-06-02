@@ -150,12 +150,12 @@ body, html {
 
 /* Collapsed Cards */
 .card.collapsed {
-    min-height: unset;
-    height: auto;
+    min-height: 0 !important;
+    height: auto !important;
 }
 .card.collapsed .card-body,
 .card.collapsed .card-notes {
-    display: none;
+    display: none !important;
 }
 
 /* Freeform specific */
