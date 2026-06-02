@@ -3848,3 +3848,225 @@ window.scrollToLine = function (lineNum) {
         }, 500);
     }
 };
+
+// ============================================================
+//  REPORTS: Document Statistics
+// ============================================================
+
+function statRow(label, value, highlight) {
+    return `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#1a232c; border-radius:6px; border-left: 3px solid ${highlight || '#36424e'};">
+        <span style="font-size:13px; color:var(--text-muted);">${label}</span>
+        <span style="font-size:14px; font-weight:bold; color:white;">${value}</span>
+    </div>`;
+}
+
+document.getElementById('reports-doc-stats')?.addEventListener('click', openDocStats);
+document.getElementById('reports-check-format')?.addEventListener('click', openCheckFormat);
+
+function openDocStats() {
+    const paras = Array.from(editor.querySelectorAll('p'));
+    const pageHeightPixels = 11 * 96;
+    const pages = Math.max(1, Math.ceil(editor.scrollHeight / pageHeightPixels));
+
+    // Count by element type
+    const counts = { 'scene-heading':0, action:0, character:0, dialogue:0, parenthetical:0, transition:0, shot:0, other:0 };
+    const charDialogueCounts = {};
+    let lastChar = null;
+    let totalWords = 0;
+    let dialogueWords = 0;
+    let actionWords = 0;
+
+    paras.forEach(p => {
+        const type = Array.from(p.classList).find(c => counts[c] !== undefined) || 'other';
+        const text = p.textContent.replace(/\u200B/g, '').trim();
+        if (!text) return;
+
+        counts[type] = (counts[type] || 0) + 1;
+        const wc = text.split(/\s+/).filter(w => w.length > 0).length;
+        totalWords += wc;
+
+        if (type === 'character') {
+            lastChar = text.replace(/\(.*?\)/g, '').trim();
+        } else if (type === 'dialogue') {
+            dialogueWords += wc;
+            if (lastChar) {
+                charDialogueCounts[lastChar] = (charDialogueCounts[lastChar] || 0) + 1;
+            }
+        } else if (type === 'action') {
+            actionWords += wc;
+            lastChar = null;
+        } else {
+            lastChar = null;
+        }
+    });
+
+    const uniqueChars = Object.keys(charDialogueCounts).length;
+    const readMinutes = Math.max(1, Math.round(pages));
+    const topChars = Object.entries(charDialogueCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6);
+
+    const topCharHtml = topChars.length
+        ? `<div style="background:#1a232c; border-radius:6px; padding:10px 12px;">
+            <p style="font-size:11px; color:var(--text-muted); margin:0 0 8px 0; text-transform:uppercase; letter-spacing:0.05em;">Dialogue Lines per Character</p>
+            ${topChars.map(([name, ct]) => {
+                const maxCt = topChars[0][1];
+                const pct = Math.round((ct / maxCt) * 100);
+                return `<div style="margin-bottom:6px;">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:2px;">
+                        <span style="color:white;">${name}</span><span style="color:#10b981;">${ct}</span>
+                    </div>
+                    <div style="background:#0d1b2a; border-radius:3px; height:4px;">
+                        <div style="background:#1b8adb; width:${pct}%; height:4px; border-radius:3px;"></div>
+                    </div>
+                </div>`;
+            }).join('')}
+          </div>`
+        : '';
+
+    document.getElementById('doc-stats-body').innerHTML = `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            ${statRow('Total Words', totalWords.toLocaleString(), '#1b8adb')}
+            ${statRow('Pages', pages, '#1b8adb')}
+            ${statRow('Scenes', counts['scene-heading'], '#f59e0b')}
+            ${statRow('Speaking Characters', uniqueChars, '#f59e0b')}
+            ${statRow('Dialogue Lines', counts['dialogue'], '#10b981')}
+            ${statRow('Action Lines', counts['action'], '#10b981')}
+            ${statRow('Transitions', counts['transition'], '#36424e')}
+            ${statRow('Est. Read Time', `~${readMinutes} min`, '#8b5cf6')}
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:2px;">
+            ${statRow('Dialogue Words', dialogueWords.toLocaleString(), '#36424e')}
+            ${statRow('Action Words', actionWords.toLocaleString(), '#36424e')}
+        </div>
+        ${topCharHtml}`;
+
+    document.getElementById('doc-stats-modal').style.display = 'flex';
+}
+
+document.getElementById('btn-close-doc-stats').addEventListener('click', () => {
+    document.getElementById('doc-stats-modal').style.display = 'none';
+});
+
+
+// ============================================================
+//  REPORTS: Check Formatting
+// ============================================================
+
+function openCheckFormat() {
+    const paras = Array.from(editor.querySelectorAll('p'));
+    const issues = [];
+
+    function addIssue(lineNum, severity, rule, detail, para) {
+        issues.push({ lineNum, severity, rule, detail, para });
+    }
+
+    const SCENE_PREFIXES = /^(INT\.|EXT\.|INT\/EXT\.|I\/E\.|INTERIOR|EXTERIOR)/i;
+    const VALID_TRANSITIONS = /TO:$|FADE IN:|FADE OUT\.|SMASH CUT:|MATCH CUT:|CUT TO BLACK\./i;
+
+    let lineNum = 0;
+    let prevType = null;
+    let consecutiveActionLines = 0;
+
+    paras.forEach((p, idx) => {
+        const text = p.textContent.replace(/\u200B/g, '').trim();
+        if (!text) { prevType = null; return; }
+        lineNum++;
+
+        const type = ['scene-heading','action','character','dialogue','parenthetical','transition','shot']
+            .find(t => p.classList.contains(t)) || 'other';
+
+        // Rule 1 – Dialogue without a character line above it
+        if (type === 'dialogue' && prevType !== 'character' && prevType !== 'parenthetical' && prevType !== 'dialogue') {
+            addIssue(lineNum, 'error', 'Orphaned Dialogue', `Dialogue line has no Character name above it.`, p);
+        }
+
+        // Rule 2 – Character name not in ALL CAPS
+        if (type === 'character') {
+            const name = text.replace(/\(.*?\)/g, '').trim();
+            if (name !== name.toUpperCase()) {
+                addIssue(lineNum, 'warning', 'Character Not Uppercase', `"${name}" — character names must be ALL CAPS.`, p);
+            }
+        }
+
+        // Rule 3 – Scene heading not starting with INT./EXT.
+        if (type === 'scene-heading' && !SCENE_PREFIXES.test(text)) {
+            addIssue(lineNum, 'warning', 'Scene Heading Format', `"${text.slice(0,40)}" — should start with INT. or EXT.`, p);
+        }
+
+        // Rule 4 – Parenthetical not following character or dialogue
+        if (type === 'parenthetical' && prevType !== 'character' && prevType !== 'dialogue') {
+            addIssue(lineNum, 'error', 'Orphaned Parenthetical', `Parenthetical not inside dialogue.`, p);
+        }
+
+        // Rule 5 – Consecutive character lines (forgot to add dialogue)
+        if (type === 'character' && prevType === 'character') {
+            addIssue(lineNum, 'error', 'Missing Dialogue', `Character line follows another character line — missing dialogue?`, p);
+        }
+
+        // Rule 6 – Very long unbroken action block (> 8 consecutive action lines)
+        if (type === 'action') {
+            consecutiveActionLines++;
+            if (consecutiveActionLines === 9) {
+                addIssue(lineNum, 'info', 'Long Action Block', `9+ consecutive action lines — consider breaking up the block.`, p);
+            }
+        } else {
+            consecutiveActionLines = 0;
+        }
+
+        // Rule 7 – Transition not in ALL CAPS
+        if (type === 'transition' && text !== text.toUpperCase()) {
+            addIssue(lineNum, 'warning', 'Transition Not Uppercase', `"${text}" — transitions should be ALL CAPS.`, p);
+        }
+
+        // Rule 8 – Transition doesn't match common patterns (info only)
+        if (type === 'transition' && !VALID_TRANSITIONS.test(text)) {
+            addIssue(lineNum, 'info', 'Unusual Transition', `"${text}" — doesn't match standard transition formats.`, p);
+        }
+
+        prevType = type;
+    });
+
+    const errors   = issues.filter(i => i.severity === 'error').length;
+    const warnings = issues.filter(i => i.severity === 'warning').length;
+    const infos    = issues.filter(i => i.severity === 'info').length;
+
+    const severityStyle = { error: '#ef4444', warning: '#f59e0b', info: '#3b82f6' };
+    const severityIcon  = { error: '🔴', warning: '🟡', info: '🔵' };
+
+    const summaryEl = document.getElementById('check-format-summary');
+    if (issues.length === 0) {
+        summaryEl.innerHTML = `<span style="color:#10b981; font-weight:bold;">✅ No formatting issues found — script looks great!</span>`;
+    } else {
+        summaryEl.innerHTML =
+            `Found <strong style="color:#ef4444;">${errors} error${errors !== 1 ? 's' : ''}</strong>, ` +
+            `<strong style="color:#f59e0b;">${warnings} warning${warnings !== 1 ? 's' : ''}</strong>, ` +
+            `<strong style="color:#3b82f6;">${infos} note${infos !== 1 ? 's' : ''}</strong>.`;
+    }
+
+    const bodyEl = document.getElementById('check-format-body');
+    if (issues.length === 0) {
+        bodyEl.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px;">Nothing to report.</div>`;
+    } else {
+        bodyEl.innerHTML = issues.map(issue =>
+            `<div style="display:flex; gap:10px; align-items:flex-start; background:#1a232c; border-left:3px solid ${severityStyle[issue.severity]}; border-radius:4px; padding:8px 10px;">
+                <span style="font-size:14px; flex-shrink:0;">${severityIcon[issue.severity]}</span>
+                <div style="flex:1; min-width:0;">
+                    <div style="display:flex; gap:8px; align-items:baseline; flex-wrap:wrap;">
+                        <span style="font-size:12px; font-weight:bold; color:${severityStyle[issue.severity]};">${issue.rule}</span>
+                        <a href="#" onclick="scrollToLine(${issue.lineNum}); document.getElementById('check-format-modal').style.display='none'; return false;"
+                           style="font-size:11px; color:#3b82f6; text-decoration:underline; flex-shrink:0;">Line #${issue.lineNum}</a>
+                    </div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:2px; word-break:break-word;">${issue.detail}</div>
+                </div>
+            </div>`
+        ).join('');
+    }
+
+    document.getElementById('check-format-modal').style.display = 'flex';
+}
+
+document.getElementById('btn-close-check-format').addEventListener('click', () => {
+    document.getElementById('check-format-modal').style.display = 'none';
+});
+

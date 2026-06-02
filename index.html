@@ -119,8 +119,8 @@
         </div>
         <div class="menu-item dropdown" id="reports-menu">Reports
             <div class="dropdown-content">
-                <div class="dropdown-item"><span>Document Statistics</span></div>
-                <div class="dropdown-item"><span>Check Formatting</span></div>
+                <div class="dropdown-item" id="reports-doc-stats"><span>Document Statistics</span></div>
+                <div class="dropdown-item" id="reports-check-format"><span>Check Formatting</span></div>
                 <div class="dropdown-divider"></div>
                 <div class="dropdown-item" id="reports-ai-analysis"><span><span style="margin-right:6px;">🤖</span>AI Script Analysis</span></div>
             </div>
@@ -535,6 +535,8 @@
         </div>
     </div>
 
+    </div>
+
     <!-- GitHub Update Modal -->
     <div id="github-update-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="width: 480px;">
@@ -549,6 +551,29 @@
                 </button>
             </div>
             <button id="btn-close-github-update" class="modal-btn" style="background-color: #4a5568; margin-top: 10px; width: 100%;">Close</button>
+        </div>
+    </div>
+
+    <!-- Document Statistics Modal -->
+    <div id="doc-stats-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="width: 540px;">
+            <h2>📊 Document Statistics</h2>
+            <div id="doc-stats-body" style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Injected by JS -->
+            </div>
+            <button id="btn-close-doc-stats" class="modal-btn" style="background-color: #4a5568; margin-top: 16px; width: 100%;">Close</button>
+        </div>
+    </div>
+
+    <!-- Check Formatting Modal -->
+    <div id="check-format-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="width: 580px;">
+            <h2>✅ Check Formatting</h2>
+            <div id="check-format-summary" style="margin-bottom: 12px; font-size: 13px; color: var(--text-muted);"></div>
+            <div id="check-format-body" style="max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
+                <!-- Injected by JS -->
+            </div>
+            <button id="btn-close-check-format" class="modal-btn" style="background-color: #4a5568; margin-top: 16px; width: 100%;">Close</button>
         </div>
     </div>
 
