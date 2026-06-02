@@ -312,11 +312,11 @@ print(file)
             
         try:
             show_numbers = export_config.get("showPageNumbers", False)
-            start_page = export_config.get("startPageNumber", 2)
+            start_page = export_config.get("startPageNumber", 1)
             title_lines = export_config.get("titleLines", [])
 
             class ScreenplayPDF(fpdf.FPDF):
-                def __init__(self, show_page_numbers=False, start_page=2):
+                def __init__(self, show_page_numbers=False, start_page=1):
                     super().__init__(unit='in', format='Letter')
                     self.show_page_numbers = show_page_numbers
                     self.current_script_page = start_page
