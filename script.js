@@ -444,7 +444,10 @@ if (mindMapBtn) {
         const charStats = {};
         
         pars.forEach(p => {
-            const text = p.textContent.replace(/\u200B/g, '').trim();
+            let text = p.textContent.replace(/\u200B/g, '').trim();
+            if (['scene-heading', 'character', 'transition', 'shot'].includes(getLineType(p))) {
+                text = text.toUpperCase();
+            }
             if (!text) return;
             
             if (p.classList.contains('scene-heading')) {
@@ -2270,7 +2273,17 @@ if (formatToolbar) {
         window.currentAiReportName = (appSettings.projectName || 'Untitled Project') + ' - ' + sceneName;
 
         // We send empty strings for outside elements so absolute line numbers stay identical for the Python script!
-        const sceneParagraphs = paragraphs.map((p, index) => (index >= startIndex && index < endIndex) ? p.textContent : "");
+        const sceneParagraphs = paragraphs.map((p, index) => {
+            if (index >= startIndex && index < endIndex) {
+                let text = p.textContent;
+                const type = getLineType(p);
+                if (['scene-heading', 'character', 'transition', 'shot'].includes(type)) {
+                    return text.toUpperCase();
+                }
+                return text;
+            }
+            return "";
+        });
         const result = await window.pywebview.api.analyze_script(sceneParagraphs);
 
         syncDot.style.backgroundColor = '#10b981';
@@ -3843,7 +3856,17 @@ document.getElementById('ctx-ai-scene-check').addEventListener('mousedown', asyn
         if (paragraphs[i].classList.contains('scene-heading')) { endIndex = i; break; }
     }
 
-    const sceneParagraphs = paragraphs.map((p, index) => (index >= startIndex && index < endIndex) ? p.textContent : "");
+    const sceneParagraphs = paragraphs.map((p, index) => {
+        if (index >= startIndex && index < endIndex) {
+            let text = p.textContent;
+            const type = getLineType(p);
+            if (['scene-heading', 'character', 'transition', 'shot'].includes(type)) {
+                return text.toUpperCase();
+            }
+            return text;
+        }
+        return "";
+    });
     const result = await window.pywebview.api.analyze_script(sceneParagraphs);
 
     syncDot.style.backgroundColor = '#10b981';
@@ -3981,8 +4004,14 @@ document.getElementById('reports-ai-analysis').addEventListener('click', async (
 
     window.currentAiReportName = appSettings.projectName || 'Untitled Project';
 
-    // Send array of paragraphs to Python
-    const paragraphs = Array.from(editor.querySelectorAll('p')).map(p => p.textContent);
+    const paragraphs = Array.from(editor.querySelectorAll('p')).map(p => {
+        let text = p.textContent;
+        const type = getLineType(p);
+        if (['scene-heading', 'character', 'transition', 'shot'].includes(type)) {
+            return text.toUpperCase();
+        }
+        return text;
+    });
     const result = await window.pywebview.api.analyze_script(paragraphs);
 
     syncDot.style.backgroundColor = '#10b981';
@@ -4305,3 +4334,4 @@ window.updateCharacterNote = function(charName, noteContent) {
     appSettings.characterNotes = appSettings.characterNotes || {};
     appSettings.characterNotes[charName] = noteContent;
 };
+
