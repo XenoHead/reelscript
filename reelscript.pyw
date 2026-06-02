@@ -628,7 +628,10 @@ print(file)
         import json
         escaped_content = json.dumps(note_content)
         if active_window:
-            active_window.evaluate_js(f"if(window.updateMindmapNote) window.updateMindmapNote('{scene_id}', {escaped_content});")
+            try:
+                active_window.evaluate_js(f"if(window.updateMindmapNote) window.updateMindmapNote('{scene_id}', {escaped_content});")
+            except Exception:
+                pass
         return "OK"
 
     def update_character_note(self, char_name, note_content):
@@ -636,7 +639,10 @@ print(file)
         import json
         escaped_content = json.dumps(note_content)
         if active_window:
-            active_window.evaluate_js(f"if(window.updateCharacterNote) window.updateCharacterNote({json.dumps(char_name)}, {escaped_content});")
+            try:
+                active_window.evaluate_js(f"if(window.updateCharacterNote) window.updateCharacterNote({json.dumps(char_name)}, {escaped_content});")
+            except Exception:
+                pass
         return "OK"
 
     def load_latest_cloud(self, cloud_dir, project_name):
