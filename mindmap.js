@@ -37,8 +37,8 @@ modalNotes.addEventListener('input', () => {
 });
 
 function openModal(titleEl, bodyEl, notesEl, syncType, syncId) {
-    modalTitle.textContent = titleEl.textContent;
-    modalBody.textContent = bodyEl.textContent;
+    modalTitle.innerHTML = titleEl.innerHTML;
+    modalBody.innerHTML = bodyEl.innerHTML;
     
     if (notesEl) {
         modalNotes.innerHTML = notesEl.innerHTML;
