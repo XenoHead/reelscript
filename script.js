@@ -948,12 +948,18 @@ document.getElementById('btn-create-new-project').addEventListener('click', asyn
         const safeName = newName.replace(/[\\/:*?"<>|]/g, '');
         let savedPath = null;
 
-        if (cloudFolderPath) {
-            savedPath = cloudFolderPath + '\\' + safeName + '.rsp';
-            await window.pywebview.api.save_project(projectData, savedPath);
-        } else if (newLocalDir) {
+        if (newLocalDir) {
             savedPath = newLocalDir + '\\' + safeName + '.rsp';
             await window.pywebview.api.save_project(projectData, savedPath);
+        }
+
+        if (cloudFolderPath) {
+            const cloudPath = cloudFolderPath + '\\' + safeName + '.rsp';
+            await window.pywebview.api.save_project(projectData, cloudPath);
+            // If they didn't provide a local dir, fallback to cloud as current project
+            if (!savedPath) {
+                savedPath = cloudPath;
+            }
         }
 
         appSettings.currentProjectFile = savedPath;
