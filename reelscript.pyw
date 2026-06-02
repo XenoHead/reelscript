@@ -83,8 +83,6 @@ class BackendAPI:
                     settings = json.load(f)
             except Exception:
                 pass
-        if not settings.get("cloudDir"):
-            settings["cloudDir"] = r"G:\My Drive\scripts\ReelScript"
         if settings.get("geminiApiKey"):
             os.environ["GEMINI_API_KEY"] = settings.get("geminiApiKey")
         return settings
@@ -686,6 +684,16 @@ print(file)
         except Exception as e:
             return {"error": f"Failed to copy executable: {str(e)}"}
 
+    # Default version info bundled with the app (used for first-install seeding)
+    DEFAULT_VERSION = {
+        "version": "2.8.0",
+        "last_updated": "2026-05-31",
+        "changelog": [
+            "Added prompt confirmation before overwriting with cloud version.",
+            "Added Update Executable on Cloud feature."
+        ]
+    }
+
     def get_version_info(self):
         version_file = os.path.join(current_dir, "version.json")
         if os.path.exists(version_file):
@@ -694,7 +702,49 @@ print(file)
                     return json.load(f)
             except Exception:
                 pass
-        return {"version": "2.5", "changelog": []}
+        # First install: version.json missing — seed it from the bundled default
+        try:
+            with open(version_file, "w", encoding="utf-8") as f:
+                json.dump(self.DEFAULT_VERSION, f, indent=4)
+        except Exception:
+            pass
+        return self.DEFAULT_VERSION
+
+    def check_for_github_updates(self):
+        """Fetch version.json from GitHub and compare against local version."""
+        GITHUB_VERSION_URL = "https://raw.githubusercontent.com/XenoHead2/reelscript/main/version.json"
+        try:
+            import urllib.request
+            local_info = self.get_version_info()
+            local_ver = local_info.get("version", "0.0.0")
+
+            with urllib.request.urlopen(GITHUB_VERSION_URL, timeout=8) as resp:
+                remote_info = json.loads(resp.read().decode("utf-8"))
+
+            remote_ver = remote_info.get("version", "0.0.0")
+
+            def parse_version(v_str):
+                try:
+                    return tuple(int(x) for x in str(v_str).split("."))
+                except Exception:
+                    return (0, 0, 0)
+
+            if parse_version(remote_ver) > parse_version(local_ver):
+                return {
+                    "update_available": True,
+                    "local_version": local_ver,
+                    "remote_version": remote_ver,
+                    "changelog": remote_info.get("changelog", []),
+                    "last_updated": remote_info.get("last_updated", "")
+                }
+            else:
+                return {
+                    "update_available": False,
+                    "local_version": local_ver,
+                    "remote_version": remote_ver
+                }
+        except Exception as e:
+            return {"error": str(e)}
 
     def check_for_updates(self, cloud_dir):
         if not cloud_dir or not os.path.exists(cloud_dir):
