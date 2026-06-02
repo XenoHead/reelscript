@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+format_tools_log.json
+*log*.json
+*.log.json
