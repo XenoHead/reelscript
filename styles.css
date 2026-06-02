@@ -760,6 +760,32 @@ body.show-scene-numbers .script-page p.scene-heading::before {
     display: inline-block;
 }
 
+/* Line Numbers Toggle */
+body.show-line-numbers .script-page {
+    counter-reset: line-num;
+}
+body.show-line-numbers .script-page p {
+    position: relative;
+    counter-increment: line-num;
+}
+body.show-line-numbers .script-page p::before {
+    content: counter(line-num);
+    position: absolute;
+    left: -40px;
+    width: 30px;
+    text-align: right;
+    color: #9ca3af;
+    font-size: 10px;
+    font-family: monospace;
+    opacity: 0.5;
+    pointer-events: none;
+}
+@media print {
+    body.show-line-numbers .script-page p::before {
+        display: none !important;
+    }
+}
+
 /* Pulsing Update Now Button */
 @keyframes pulse-amber {
     0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }

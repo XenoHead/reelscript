@@ -735,6 +735,12 @@ function applySettingsToUI() {
     }
     document.body.classList.toggle('show-scene-numbers', appSettings.showSceneNumbers);
 
+    const lineNumbersCheck = document.getElementById('line-numbers-check');
+    if (lineNumbersCheck) {
+        lineNumbersCheck.style.visibility = appSettings.showLineNumbers ? 'visible' : 'hidden';
+    }
+    document.body.classList.toggle('show-line-numbers', appSettings.showLineNumbers);
+
     const saveLocationCheck = document.getElementById('save-location-check');
     if (saveLocationCheck) {
         saveLocationCheck.style.visibility = appSettings.showSaveLocation ? 'visible' : 'hidden';
@@ -2981,6 +2987,15 @@ if (sceneNumbersBtn) {
     });
 }
 
+const lineNumbersBtn = document.getElementById('view-toggle-line-numbers');
+if (lineNumbersBtn) {
+    lineNumbersBtn.addEventListener('click', () => {
+        appSettings.showLineNumbers = !appSettings.showLineNumbers;
+        saveSettings();
+        applySettingsToUI();
+    });
+}
+
 const saveLocationBtn = document.getElementById('view-toggle-save-location');
 if (saveLocationBtn) {
     saveLocationBtn.addEventListener('click', () => {
@@ -3014,6 +3029,26 @@ if (filterNonDialogueBtn) {
 
 // --- Clean Spacing Logic ---
 // --- Auto-Format Logging Helper ---
+function getParagraphLocation(p) {
+    const parent = p.parentNode;
+    if (!parent) return "Unknown Location";
+    const siblings = Array.from(parent.children);
+    const lineIndex = siblings.indexOf(p);
+    if (lineIndex === -1) return "Unknown Location";
+    
+    const lineNum = lineIndex + 1;
+    let sceneNum = 0;
+    
+    for (let i = 0; i <= lineIndex; i++) {
+        if (siblings[i].classList && siblings[i].classList.contains('scene-heading')) {
+            sceneNum++;
+        }
+    }
+    
+    const sceneText = sceneNum === 0 ? "Intro" : `Scene ${sceneNum}`;
+    return `${sceneText}, Line ${lineNum}`;
+}
+
 async function logAutoFormatAction(toolName, changesArray) {
     if (!window.pywebview) return;
     if (!changesArray || changesArray.length === 0) return;
@@ -3065,7 +3100,7 @@ function cleanExtraSpacing() {
             if (paragraphs.length - removedCount > 1) {
                 p.remove();
                 removedCount++;
-                changesArray.push({ issue: "Empty line", fix: "Removed empty paragraph", context: `Paragraph #${idx + 1}` });
+                changesArray.push({ issue: "Empty line", fix: "Removed empty paragraph", context: getParagraphLocation(p) });
             } else {
                 p.innerHTML = '&#8203;';
             }
@@ -3074,7 +3109,7 @@ function cleanExtraSpacing() {
                 textCleanedCount++;
                 let preview = p.textContent.trim().substring(0, 30);
                 if (p.textContent.trim().length > 30) preview += "...";
-                changesArray.push({ issue: "Multiple sequential spaces", fix: "Reduced to single space", context: `"${preview}"` });
+                changesArray.push({ issue: "Multiple sequential spaces", fix: "Reduced to single space", context: `${getParagraphLocation(p)}: "${preview}"` });
             }
         }
     });
@@ -3117,7 +3152,7 @@ if (cutDoubleParensBtn) {
             if (text.startsWith('(') && text.endsWith(')')) {
                 text = text.slice(1, -1);
                 changed = true;
-                changesArray.push({ issue: "Manual ( ) around parenthetical", fix: "Stripped ( )", context: `"${originalText}" -> "${text}"` });
+                changesArray.push({ issue: "Manual ( ) around parenthetical", fix: "Stripped ( )", context: `${getParagraphLocation(p)}: "${originalText}" -> "${text}"` });
             }
 
             if (changed) {
@@ -3197,7 +3232,7 @@ function batchProcessTextNodes(p, names, isParenthetical) {
                     changesArray.push({
                         issue: isParenthetical ? "Incorrect casing in parenthetical" : "Character name not capitalized",
                         fix: isParenthetical ? "Lowercased and fixed names" : "Capitalized character name",
-                        context: `"${origVal.trim()}" -> "${val.trim()}"`
+                        context: `${getParagraphLocation(p)}: "${origVal.trim()}" -> "${val.trim()}"`
                     });
                 }
                 node.nodeValue = val;
@@ -4540,7 +4575,7 @@ document.getElementById('tools-fix-colors')?.addEventListener('click', () => {
             p.style.color = '';
             p.style.backgroundColor = '';
             changed = true;
-            changesArray.push({ issue: "Inline color on block", fix: "Stripped style color/backgroundColor", context: `"${pPreview}"` });
+            changesArray.push({ issue: "Inline color on block", fix: "Stripped style color/backgroundColor", context: `${getParagraphLocation(p)}: "${pPreview}"` });
         }
         
         // Strip inline styles and font color tags from children
@@ -4549,12 +4584,12 @@ document.getElementById('tools-fix-colors')?.addEventListener('click', () => {
                 child.style.color = '';
                 child.style.backgroundColor = '';
                 changed = true;
-                changesArray.push({ issue: "Inline color on child element", fix: "Stripped style color/backgroundColor", context: `"${pPreview}"` });
+                changesArray.push({ issue: "Inline color on child element", fix: "Stripped style color/backgroundColor", context: `${getParagraphLocation(p)}: "${pPreview}"` });
             }
             if (child.tagName === 'FONT' && child.hasAttribute('color')) {
                 child.removeAttribute('color');
                 changed = true;
-                changesArray.push({ issue: "<font> tag with color attribute", fix: "Stripped color attribute", context: `"${pPreview}"` });
+                changesArray.push({ issue: "<font> tag with color attribute", fix: "Stripped color attribute", context: `${getParagraphLocation(p)}: "${pPreview}"` });
             }
         });
         
