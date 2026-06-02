@@ -550,6 +550,12 @@ print(file)
             
         if self.spell is None:
             self.spell = SpellChecker()
+            
+            # Default screenwriting abbreviations
+            screenplay_terms = ["int", "ext", "cont", "vo", "os", "pov", "cgi", "vfx", "sfx", "bg", "fg"]
+            for term in screenplay_terms:
+                self.personal_dict.add(term)
+                
             dict_path = os.path.join(self.backup_dir, "personal_dict.txt")
             if os.path.exists(dict_path):
                 with open(dict_path, 'r', encoding='utf-8') as f:
@@ -564,7 +570,7 @@ print(file)
         
         misspelled = []
         for w in unique_words:
-            w_clean = re.sub(r'[^\w\s]', '', w.lower())
+            w_clean = re.sub(r'[^\w\s\']', '', w.lower())
             if not w_clean or w_clean in self.personal_dict or w_clean in self.spell:
                 continue
             
