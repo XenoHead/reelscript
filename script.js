@@ -2392,35 +2392,6 @@ if (shareSaveLatest) {
     });
 }
 
-const shareUploadExe = document.getElementById('share-upload-exe');
-if (shareUploadExe) {
-    shareUploadExe.addEventListener('click', async () => {
-        if (!window.pywebview) {
-            alert("This feature requires the Python backend.");
-            return;
-        }
-
-        if (!appSettings.cloudDir) {
-            alert("Please configure a Cloud Backup folder (e.g., your Google Drive folder) in 'Manage Backups & Auto-Save' first.");
-            return;
-        }
-
-        syncDot.style.backgroundColor = '#f59e0b';
-        syncText.textContent = 'Updating executable on cloud...';
-
-        const result = await window.pywebview.api.update_executable_on_cloud(appSettings.cloudDir);
-
-        if (result.error) {
-            alert(result.error);
-            syncDot.style.backgroundColor = '#ef4444';
-            syncText.textContent = 'Upload failed';
-        } else if (result.success) {
-            syncDot.style.backgroundColor = '#10b981';
-            syncText.textContent = 'Updated executable';
-            alert(`Successfully copied the application executable (${result.filename}) to your cloud folder!\n\nPath: ${result.filepath}`);
-        }
-    });
-}
 
 // --- Changelog Modal Logic ---
 const changelogModal = document.getElementById('changelog-modal');

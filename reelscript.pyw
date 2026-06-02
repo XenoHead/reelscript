@@ -650,47 +650,13 @@ print(file)
         except Exception as e:
             return {"error": str(e)}
 
-    def update_executable_on_cloud(self, cloud_dir):
-        if not cloud_dir or not os.path.exists(cloud_dir):
-            return {"error": "Cloud directory not found or not configured. Please set it in 'Manage Backups'."}
-        
-        src_exe = None
-        
-        if getattr(sys, 'frozen', False):
-            src_exe = sys.executable
-        else:
-            # Look in the main current_dir for built executable
-            possible_paths = [
-                os.path.join(current_dir, "dist", "reelscript.exe"),
-                os.path.join(current_dir, "dist", "ReelScript.exe"),
-                os.path.join(current_dir, "reelscript.exe"),
-                os.path.join(current_dir, "ReelScript.exe")
-            ]
-            for path in possible_paths:
-                if os.path.exists(path):
-                    src_exe = path
-                    break
-        
-        if not src_exe or not os.path.exists(src_exe):
-            return {"error": "Executable not found. Please compile the app first using build.bat."}
-            
-        try:
-            dest_name = os.path.basename(src_exe)
-            dest_path = os.path.join(cloud_dir, dest_name)
-            
-            import shutil
-            shutil.copy2(src_exe, dest_path)
-            return {"success": True, "filepath": dest_path, "filename": dest_name}
-        except Exception as e:
-            return {"error": f"Failed to copy executable: {str(e)}"}
 
     # Default version info bundled with the app (used for first-install seeding)
     DEFAULT_VERSION = {
         "version": "2.8.0",
         "last_updated": "2026-05-31",
         "changelog": [
-            "Added prompt confirmation before overwriting with cloud version.",
-            "Added Update Executable on Cloud feature."
+            "Added prompt confirmation before overwriting with cloud version."
         ]
     }
 
