@@ -122,6 +122,47 @@ body, html {
     font-size: 12px;
     flex-grow: 1;
     color: #444;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Custom Scrollbar for Card Body */
+.card-body::-webkit-scrollbar {
+    width: 4px;
+}
+.card-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+.card-body::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 4px;
+}
+
+/* Meta tags for Scene Cards */
+.meta-tag {
+    margin-bottom: 5px;
+    font-size: 11px;
+    border-bottom: 1px dotted rgba(0,0,0,0.1);
+    padding-bottom: 3px;
+}
+.meta-tag strong {
+    color: #333;
+}
+.meta-chars {
+    color: #005A9E;
+    margin-bottom: 8px;
+    border-bottom: none;
+}
+.meta-synopsis {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    font-size: 11px;
+    line-height: 1.3;
+    color: #555;
+    background-color: rgba(0,0,0,0.03);
+    padding: 6px;
+    border-radius: 4px;
 }
 
 /* Toolbar */

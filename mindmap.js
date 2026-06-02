@@ -131,11 +131,27 @@ function initCorkboard() {
     
     let x = 50;
     let y = 50;
-    const yPadding = cardsCollapsed ? 50 : 150;
+    const yPadding = cardsCollapsed ? 50 : 340;
     
     scriptData.scenes.forEach((scene, index) => {
-        const titleText = `Scene ${scene.id}: ${scene.name}`;
-        const card = createCard(titleText, scene.characters.join(', ') || 'No characters detected.', x, y, false, scene.notes, 'scene', scene.id);
+        const titleText = `Scene ${scene.id}: ${scene.location || scene.name}`;
+        
+        let ratio = "Balanced";
+        if (scene.actionCount > scene.dialogueCount * 2) ratio = "Action-Heavy";
+        if (scene.dialogueCount > scene.actionCount * 2) ratio = "Dialogue-Heavy";
+        
+        let estPages = (scene.blockCount / 55).toFixed(1);
+        let chars = scene.characters.join(', ') || 'None';
+        
+        const bodyHtml = `
+            <div class="meta-tag"><strong>Time:</strong> ${scene.time || 'N/A'}</div>
+            <div class="meta-tag"><strong>Length:</strong> ~${estPages} pgs</div>
+            <div class="meta-tag"><strong>Type:</strong> ${ratio}</div>
+            <div class="meta-tag meta-chars"><strong>Chars:</strong> ${chars}</div>
+            ${scene.synopsis ? `<div class="meta-synopsis"><i>"${scene.synopsis}"</i></div>` : ''}
+        `;
+        
+        const card = createCard(titleText, bodyHtml, x, y, false, scene.notes, 'scene', scene.id);
         if (cardsCollapsed) card.classList.add('collapsed');
         canvas.appendChild(card);
         
@@ -154,19 +170,17 @@ function initCharacterBible() {
     
     let x = 50;
     let y = 50;
-    const yPadding = cardsCollapsed ? 50 : 200;
+    const yPadding = cardsCollapsed ? 50 : 280;
     
     scriptData.characters.forEach((char) => {
         const titleText = char.name;
+        const bodyHtml = `
+            <div style="margin-bottom:8px"><strong>Scenes:</strong> ${char.scenes.length}</div>
+            <div style="margin-bottom:8px"><strong>Dialogue Lines:</strong> ${char.dialogueCount}</div>
+            ${char.intro ? `<div style="font-size:11px; font-style:italic; border-top:1px solid rgba(0,0,0,0.1); padding-top:5px">"${char.intro}"</div>` : ''}
+        `;
         
-        let autoStats = `<strong>Scenes In:</strong> ${char.scenes.join(', ')}<br>`;
-        autoStats += `<strong>Dialogue Blocks:</strong> ${char.dialogueCount}<br>`;
-        if (char.intro) {
-            autoStats += `<br><strong>Script Intro:</strong> <em>"${char.intro}"</em>`;
-        }
-        
-        const card = createCard(titleText, '', x, y, false, char.notes, 'character', char.name);
-        card.querySelector('.card-body').innerHTML = autoStats;
+        const card = createCard(titleText, bodyHtml, x, y, false, char.notes, 'character', char.name);
         card.classList.add('character-card');
         if (cardsCollapsed) card.classList.add('collapsed');
         canvas.appendChild(card);
@@ -208,8 +222,11 @@ function createCard(titleText, bodyText, x, y, editable = false, notesHtml = '',
     
     const body = document.createElement('div');
     body.className = 'card-body';
-    body.textContent = bodyText;
-    if (editable) body.contentEditable = "true";
+    body.innerHTML = bodyText;
+    if (editable) {
+        body.contentEditable = "true";
+        body.textContent = bodyText; // Fallback to raw text for editable cards
+    }
     
     card.appendChild(title);
     card.appendChild(body);

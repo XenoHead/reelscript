@@ -445,31 +445,62 @@ if (mindMapBtn) {
         
         pars.forEach(p => {
             let text = p.textContent.replace(/\u200B/g, '').trim();
-            if (['scene-heading', 'character', 'transition', 'shot'].includes(getLineType(p))) {
+            const lineType = getLineType(p);
+            if (['scene-heading', 'character', 'transition', 'shot'].includes(lineType)) {
                 text = text.toUpperCase();
             }
             if (!text) return;
             
             if (p.classList.contains('scene-heading')) {
                 sceneCounter++;
+                let location = text;
+                let time = '';
+                const parts = text.split(/\s*[-—–]\s*/);
+                if (parts.length > 1) {
+                    time = parts.pop().trim();
+                    location = parts.join(' - ').trim();
+                }
+
                 currentScene = { 
                     id: sceneCounter, 
                     name: text, 
+                    location: location,
+                    time: time,
                     characters: [],
-                    notes: appSettings.mindmapNotes[sceneCounter] || ''
+                    notes: appSettings.mindmapNotes[sceneCounter] || '',
+                    synopsis: '',
+                    blockCount: 0,
+                    actionCount: 0,
+                    dialogueCount: 0,
+                    shotCount: 0,
+                    transitionCount: 0
                 };
                 data.scenes.push(currentScene);
-            } else if (p.classList.contains('character') && currentScene) {
-                const charName = text.replace(/\(.*?\)/g, '').trim();
-                if (charName) {
-                    if (!currentScene.characters.includes(charName)) {
-                        currentScene.characters.push(charName);
+            } else if (currentScene) {
+                currentScene.blockCount++;
+                if (p.classList.contains('action')) {
+                    currentScene.actionCount++;
+                    if (!currentScene.synopsis && text.length > 10) {
+                        currentScene.synopsis = text;
                     }
-                    if (!charStats[charName]) {
-                        charStats[charName] = { scenes: new Set(), dialogueCount: 0, intro: '' };
+                } else if (p.classList.contains('dialogue')) {
+                    currentScene.dialogueCount++;
+                } else if (p.classList.contains('shot')) {
+                    currentScene.shotCount++;
+                } else if (p.classList.contains('transition')) {
+                    currentScene.transitionCount++;
+                } else if (p.classList.contains('character')) {
+                    const charName = text.replace(/\(.*?\)/g, '').trim();
+                    if (charName) {
+                        if (!currentScene.characters.includes(charName)) {
+                            currentScene.characters.push(charName);
+                        }
+                        if (!charStats[charName]) {
+                            charStats[charName] = { scenes: new Set(), dialogueCount: 0, intro: '' };
+                        }
+                        charStats[charName].scenes.add(sceneCounter);
+                        charStats[charName].dialogueCount++;
                     }
-                    charStats[charName].scenes.add(sceneCounter);
-                    charStats[charName].dialogueCount++;
                 }
             }
         });
