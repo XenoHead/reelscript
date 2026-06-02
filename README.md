@@ -17,6 +17,8 @@
 - Full **Find & Replace** (`Ctrl+F`) with Match Case support
 - **Focus Mode** (`F11`) — hides all UI so you can just write
 - **Dark Mode** for late-night sessions
+- **Line Numbers** (`View -> Line Numbers`) — internal togglable reference that doesn't export to PDF
+- **Format Menu** — fully functional dropdown to manually assign or switch formats on the fly
 
 ### 🤝 Collaboration & Revision Tracking
 - Built-in **Revision Tracker** tags every edit with a color-coded asterisk linked to the author's profile
@@ -44,6 +46,9 @@
 - **Manual Snapshots** — name a save state before a major rewrite and restore it anytime
 
 ### 🛠️ Tools
+- **Mind Map** (`View -> Mind Map`) — visualize scene flows with auto-populated metadata cards
+- **Auto-Format Correction Logs** (`Help -> Correction Logs`) — tracks and logs formatting fixes by Scene # and Line #
+- **Custom Filters** (`Tools -> Filters -> Custom Filter`) — selectively isolate ANY combination of line types (e.g. only Action and Shots)
 - **Character Filter** — isolate one character's dialogue to read their arc in sequence
 - **Rename Character** — globally rename across headers, dialogue, and action lines
 - **Spellcheck** — custom dictionary that ignores screenplay abbreviations (`INT/EXT`) and supports custom names

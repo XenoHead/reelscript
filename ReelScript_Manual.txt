@@ -31,15 +31,15 @@ section, to ensure smooth file sharing.
 
 
 ========================================================================
- 2. COLLABORATION & REVISIONS (HOW WE WORK TOGETHER)
+ 2. COLLABORATION & REVISIONS
 ========================================================================
 
-We will be trading a single ".rsp" (ReelScript Project) file back and forth. 
-To make sure we don't accidentally overwrite each other's work without 
+Collaborators will often trade a single ".rsp" (ReelScript Project) file back and forth. 
+To make sure you don't accidentally overwrite your co-writer's work without 
 noticing, ReelScript has a built-in Revision Tracker.
 
 TURNING ON REVISION TRACKING:
-Whenever you sit down to make edits to my script:
+Whenever you sit down to make edits to a shared script:
 1. Click "Revisions" in the top menu.
 2. Click "Track Revisions".
 3. A checkmark will appear next to it indicating it is ON.
@@ -48,8 +48,8 @@ WHAT HAPPENS WHEN TRACKING IS ON?
 Any time you change a word, delete a sentence, or add a new line, ReelScript 
 will automatically place a colored asterisk (*) next to that line. 
 - The asterisk will be in the color you picked in your Author Profile.
-- If I hover my mouse over your asterisk, a tooltip will pop up showing 
-  your name, so I know exactly who made the change.
+- If your co-writer hovers their mouse over your asterisk, a tooltip will pop up showing 
+  your name, so they know exactly who made the change.
 
 LEAVING REVISION NOTES:
 If you want to explain WHY you changed something, or leave a comment on a 
@@ -58,20 +58,20 @@ specific line without changing the script itself:
 2. Select "📝 Note" from the menu.
 3. ReelScript will automatically copy the line, attach your name, and jump 
    you to the "Revision Notes" document where you can type your thoughts. 
-   I can read this document when I open the file.
+   Your co-writer can read this document when they open the file.
 
 APPROVING CHANGES:
-If I make a change and you want to "Approve" it (removing my asterisk so 
+If your co-writer makes a change and you want to "Approve" it (removing their asterisk so 
 it becomes a permanent, normal part of the script):
-1. Right-click my asterisk.
+1. Right-click their asterisk.
 2. Select "✅ Approve". The asterisk will vanish.
 
-HOW TO GET YOUR EDITS BACK TO ME:
+HOW TO SHARE YOUR EDITS:
 1. When you are done editing, click "File" -> "Save Project".
 2. Click "Share" in the top menu -> "Open Shared Google Folder".
-3. This will open our shared Google Drive folder in your web browser.
-4. Drag and drop the saved ".rsp" file from your computer into that Google 
-   Drive folder to overwrite the old one.
+3. This will open your configured shared folder (e.g., Google Drive) in your web browser.
+4. Drag and drop the saved ".rsp" file from your computer into that shared 
+   folder to overwrite the old one.
 
 
 ========================================================================
