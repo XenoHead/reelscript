@@ -5141,6 +5141,21 @@ function openCharSheet() {
     if (!charSheetData.groups) charSheetData.groups = { scenes: [], characters: [] };
     if (!charSheetData.groups.characters) charSheetData.groups.characters = [];
     
+    // Restore sort settings
+    if (appSettings.charSheetSortValue !== undefined) {
+        charSheetSort.value = appSettings.charSheetSortValue;
+    }
+    if (appSettings.charSheetSortAsc !== undefined) {
+        charSortAsc = appSettings.charSheetSortAsc;
+        btnCharSheetSortDir.textContent = charSortAsc ? '↓' : '↑';
+    }
+    if (appSettings.charSheetCompact !== undefined) {
+        const compactToggle = document.getElementById('char-sheet-compact-toggle');
+        if (compactToggle) {
+            compactToggle.checked = appSettings.charSheetCompact;
+        }
+    }
+    
     renderCharSheetSidebar();
     renderCharSheetList();
     charSheetModal.style.display = 'flex';
@@ -5391,14 +5406,24 @@ if (btnCharSheetSortDir) {
     btnCharSheetSortDir.addEventListener('click', () => {
         charSortAsc = !charSortAsc;
         btnCharSheetSortDir.textContent = charSortAsc ? '↓' : '↑';
+        appSettings.charSheetSortAsc = charSortAsc;
+        saveSettings();
         renderCharSheetList();
     });
 }
 if (charSheetSort) {
-    charSheetSort.addEventListener('change', renderCharSheetList);
+    charSheetSort.addEventListener('change', () => {
+        appSettings.charSheetSortValue = charSheetSort.value;
+        saveSettings();
+        renderCharSheetList();
+    });
 }
 if (document.getElementById('char-sheet-compact-toggle')) {
-    document.getElementById('char-sheet-compact-toggle').addEventListener('change', renderCharSheetList);
+    document.getElementById('char-sheet-compact-toggle').addEventListener('change', (e) => {
+        appSettings.charSheetCompact = e.target.checked;
+        saveSettings();
+        renderCharSheetList();
+    });
 }
 if (btnAddCharacter) {
     btnAddCharacter.addEventListener('click', () => {
