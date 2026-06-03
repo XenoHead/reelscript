@@ -5732,3 +5732,87 @@ if (btnExecuteCapNames) {
         alert(`Capitalization complete. Capitalized ${replacementsMade} name instances.`);
     });
 }
+
+// --- Text Highlight Color Tool ---
+const textColorMenu = document.getElementById('text-color-menu');
+const textColorDropdownContent = document.getElementById('text-color-dropdown-content');
+const customTextColorPicker = document.getElementById('custom-text-color-picker');
+const miniTextColorBtn = document.getElementById('mini-text-color');
+
+if (textColorMenu && textColorDropdownContent && customTextColorPicker && miniTextColorBtn) {
+    textColorMenu.addEventListener('click', (e) => {
+        // Only populate if it's opening
+        if (!textColorMenu.classList.contains('open')) {
+            populateTextColorMenu();
+        }
+        // The global dropdown click listener handles opening/closing and e.stopPropagation
+    });
+
+    function applyTextColor(hex) {
+        // Restore focus to editor just in case
+        editor.focus();
+        document.execCommand('foreColor', false, hex);
+        triggerBackup();
+        updateStats();
+        
+        // Update the button icon's bottom border color
+        const iconSpan = miniTextColorBtn.querySelector('span');
+        if (iconSpan) {
+            iconSpan.style.borderBottomColor = hex;
+        }
+        
+        // Close dropdown
+        document.querySelectorAll('.dropdown').forEach(m => m.classList.remove('open'));
+    }
+
+    function populateTextColorMenu() {
+        textColorDropdownContent.innerHTML = '';
+        
+        const colors = appSettings.elementColors || {};
+        const elements = [
+            { key: 'scene', label: 'Scene Heading' },
+            { key: 'action', label: 'Action' },
+            { key: 'character', label: 'Character' },
+            { key: 'parenthetical', label: 'Parenthetical' },
+            { key: 'dialogue', label: 'Dialogue' },
+            { key: 'transition', label: 'Transition' },
+            { key: 'shot', label: 'Shot' }
+        ];
+        
+        let hasColors = false;
+        elements.forEach(el => {
+            if (colors[el.key]) {
+                hasColors = true;
+                const item = document.createElement('div');
+                item.className = 'dropdown-item';
+                item.innerHTML = `<span style="display:inline-block; width:12px; height:12px; background-color:${colors[el.key]}; border-radius:50%; margin-right:8px; border:1px solid #4a5568;"></span><span>${el.label} Color</span>`;
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    applyTextColor(colors[el.key]);
+                });
+                textColorDropdownContent.appendChild(item);
+            }
+        });
+        
+        if (hasColors) {
+            const divider = document.createElement('div');
+            divider.className = 'dropdown-divider';
+            textColorDropdownContent.appendChild(divider);
+        }
+        
+        const customItem = document.createElement('div');
+        customItem.className = 'dropdown-item';
+        customItem.innerHTML = `<span style="margin-right:8px;">🎨</span><span>Custom Color...</span>`;
+        customItem.addEventListener('click', (e) => {
+            e.stopPropagation();
+            customTextColorPicker.click();
+        });
+        textColorDropdownContent.appendChild(customItem);
+    }
+    
+    customTextColorPicker.addEventListener('change', (e) => {
+        if (e.target.value) {
+            applyTextColor(e.target.value);
+        }
+    });
+}

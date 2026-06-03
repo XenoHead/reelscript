@@ -277,6 +277,15 @@
         <button class="mini-tool-btn" id="mini-italic" title="Italic (Ctrl-I)" data-hotkey-display="italic"><i>I</i></button>
         <button class="mini-tool-btn" id="mini-underline" title="Underline (Ctrl-U)" data-hotkey-display="underline"><u>U</u></button>
         <button class="mini-tool-btn" id="mini-case-toggle" title="Toggle Case (Ctrl-Shift-U)" data-hotkey-display="toggle-case"><b>Aa</b></button>
+        <div class="dropdown" id="text-color-menu" style="display: flex; align-items: center; height: 100%;">
+            <button class="mini-tool-btn" id="mini-text-color" title="Highlight Color">
+                <span style="border-bottom: 3px solid #ef4444; padding-bottom: 2px; font-weight: bold; font-size: 14px;">A</span>
+            </button>
+            <div class="dropdown-content" id="text-color-dropdown-content" style="top: 100%; left: 0; min-width: 150px; text-align: left; z-index: 10000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                <!-- Populated by script.js -->
+            </div>
+        </div>
+        <input type="color" id="custom-text-color-picker" style="display: none;">
         <div class="mini-divider"></div>
         <button class="mini-tool-btn" id="mini-align-left" title="Align Left">
             <svg width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M1 3h14v1H1zM1 6h10v1H1zM1 9h14v1H1zM1 12h10v1H1z"/></svg>
