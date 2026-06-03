@@ -5655,6 +5655,23 @@ if (btnCloseCapNames) {
     });
 }
 
+const btnCapSelectAll = document.getElementById('btn-cap-select-all');
+const btnCapDeselectAll = document.getElementById('btn-cap-deselect-all');
+
+if (btnCapSelectAll) {
+    btnCapSelectAll.addEventListener('click', () => {
+        const checkboxes = capNamesList.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = true);
+    });
+}
+
+if (btnCapDeselectAll) {
+    btnCapDeselectAll.addEventListener('click', () => {
+        const checkboxes = capNamesList.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = false);
+    });
+}
+
 if (btnExecuteCapNames) {
     btnExecuteCapNames.addEventListener('click', () => {
         const checkboxes = capNamesList.querySelectorAll('input[type="checkbox"]:checked');
