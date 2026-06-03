@@ -5174,13 +5174,17 @@ function saveCharSheetData() {
 function renderCharSheetSidebar() {
     charSheetSidebarGroups.innerHTML = '';
     
-    const createSidebarBtn = (id, label, icon) => {
+    const createSidebarBtn = (id, label, icon, isCustom, index) => {
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.gap = '2px';
+        container.style.marginBottom = '4px';
+        
         const btn = document.createElement('button');
         btn.className = 'modal-btn';
-        btn.style.width = '100%';
+        btn.style.flex = '1';
         btn.style.textAlign = 'left';
         btn.style.padding = '8px 10px';
-        btn.style.marginBottom = '4px';
         btn.style.fontSize = '13px';
         btn.style.background = activeCharGroupId === id ? '#1b8adb' : 'transparent';
         btn.style.color = activeCharGroupId === id ? '#fff' : '#cbd5e1';
@@ -5194,14 +5198,98 @@ function renderCharSheetSidebar() {
             renderCharSheetSidebar();
             renderCharSheetList();
         });
-        return btn;
+        
+        container.appendChild(btn);
+        
+        if (isCustom) {
+            const arr = charSheetData.groups.characters;
+            const actionContainer = document.createElement('div');
+            actionContainer.style.display = 'flex';
+            actionContainer.style.flexDirection = 'column';
+            actionContainer.style.gap = '1px';
+            actionContainer.style.width = '20px';
+            
+            if (index > 0) {
+                const upBtn = document.createElement('button');
+                upBtn.innerHTML = '▲';
+                upBtn.style.background = 'transparent';
+                upBtn.style.border = 'none';
+                upBtn.style.color = '#94a3b8';
+                upBtn.style.cursor = 'pointer';
+                upBtn.style.fontSize = '8px';
+                upBtn.style.padding = '0';
+                upBtn.style.flex = '1';
+                upBtn.onclick = () => {
+                    const temp = arr[index];
+                    arr[index] = arr[index - 1];
+                    arr[index - 1] = temp;
+                    saveCharSheetData();
+                    renderCharSheetSidebar();
+                };
+                actionContainer.appendChild(upBtn);
+            } else {
+                const spacer = document.createElement('div');
+                spacer.style.flex = '1';
+                actionContainer.appendChild(spacer);
+            }
+            
+            if (index < arr.length - 1) {
+                const dnBtn = document.createElement('button');
+                dnBtn.innerHTML = '▼';
+                dnBtn.style.background = 'transparent';
+                dnBtn.style.border = 'none';
+                dnBtn.style.color = '#94a3b8';
+                dnBtn.style.cursor = 'pointer';
+                dnBtn.style.fontSize = '8px';
+                dnBtn.style.padding = '0';
+                dnBtn.style.flex = '1';
+                dnBtn.onclick = () => {
+                    const temp = arr[index];
+                    arr[index] = arr[index + 1];
+                    arr[index + 1] = temp;
+                    saveCharSheetData();
+                    renderCharSheetSidebar();
+                };
+                actionContainer.appendChild(dnBtn);
+            } else {
+                const spacer = document.createElement('div');
+                spacer.style.flex = '1';
+                actionContainer.appendChild(spacer);
+            }
+            
+            container.appendChild(actionContainer);
+            
+            const delBtn = document.createElement('button');
+            delBtn.innerHTML = '×';
+            delBtn.style.background = 'transparent';
+            delBtn.style.border = 'none';
+            delBtn.style.color = '#ef4444';
+            delBtn.style.cursor = 'pointer';
+            delBtn.style.fontSize = '14px';
+            delBtn.style.padding = '0 5px';
+            delBtn.onclick = () => {
+                if(confirm('Delete group ' + label + '? Characters inside will become ungrouped.')) {
+                    charSheetData.characters.forEach(c => {
+                        if (c.groupId === id) delete c.groupId;
+                    });
+                    charSheetData.groups.characters.splice(index, 1);
+                    if (activeCharGroupId === id) activeCharGroupId = 'all';
+                    saveCharSheetData();
+                    renderCharSheetSidebar();
+                    renderCharSheetList();
+                }
+            };
+            container.appendChild(delBtn);
+        }
+        
+        return container;
     };
     
-    charSheetSidebarGroups.appendChild(createSidebarBtn('all', 'All Characters', '🌍'));
-    charSheetSidebarGroups.appendChild(createSidebarBtn('ungrouped', 'Ungrouped', '📁'));
+    charSheetSidebarGroups.appendChild(createSidebarBtn('all', 'All Characters', '🌍', false));
+    charSheetSidebarGroups.appendChild(createSidebarBtn('ungrouped', 'Ungrouped', '📁', false));
     
-    charSheetData.groups.characters.forEach(g => {
-        charSheetSidebarGroups.appendChild(createSidebarBtn(g.id, g.name, '📂'));
+    charSheetData.groups.characters.forEach((g, idx) => {
+        charSheetSidebarGroups.appendChild(createSidebarBtn(g.id, g.name, '📂', true, idx));
     });
 }
 
