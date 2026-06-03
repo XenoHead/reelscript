@@ -89,6 +89,7 @@ Source: "screenshot.png";            DestDir: "{app}"; Flags: ignoreversion
 Source: "ai_assistant.png";      DestDir: "{app}"; Flags: ignoreversion
 Source: "collaboration.png";     DestDir: "{app}"; Flags: ignoreversion
 Source: "backups_sync.png";      DestDir: "{app}"; Flags: ignoreversion
+Source: "xenohead_logo.png";     DestDir: "{app}"; Flags: ignoreversion
 
 ; Sample project (optional — ships with the installer)
 Source: "SampleProject.rsp"; DestDir: "{userdocs}\ReelScript\Samples"; Flags: ignoreversion skipifsourcedoesntexist

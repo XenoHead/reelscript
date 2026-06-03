@@ -532,47 +532,47 @@ document.getElementById('menu-rescan').addEventListener('click', () => {
     }
 });
 
+// --- Edit Modal Logic ---
+const editModal = document.getElementById('edit-modal');
+const editModalTitle = document.getElementById('edit-modal-title');
+const editModalBody = document.getElementById('edit-modal-body');
+let activeEditCard = null;
+
+document.getElementById('edit-modal-close').addEventListener('click', () => {
+    editModal.style.display = 'none';
+});
+
+document.getElementById('btn-save-edit').addEventListener('click', () => {
+    if (activeEditCard) {
+        const titleEl = activeEditCard.querySelector('.card-title');
+        const bodyEl = activeEditCard.querySelector('.card-body');
+        
+        titleEl.innerHTML = editModalTitle.innerHTML;
+        bodyEl.innerHTML = editModalBody.innerHTML;
+        
+        if (window.pywebview && window.activeContextMenuSyncType) {
+            window.pywebview.api.update_mindmap_card_content(
+                window.activeContextMenuSyncType, 
+                window.activeContextMenuSyncId, 
+                titleEl.innerHTML, 
+                bodyEl.innerHTML
+            );
+        }
+    }
+    editModal.style.display = 'none';
+});
+
 document.getElementById('menu-edit').addEventListener('click', () => {
     document.getElementById('card-context-menu').style.display = 'none';
     if (window.activeContextMenuCard) {
-        const card = window.activeContextMenuCard;
-        const title = card.querySelector('.card-title');
-        const body = card.querySelector('.card-body');
+        activeEditCard = window.activeContextMenuCard;
+        const title = activeEditCard.querySelector('.card-title');
+        const body = activeEditCard.querySelector('.card-body');
         
-        title.contentEditable = "true";
-        body.contentEditable = "true";
+        editModalTitle.innerHTML = title.innerHTML;
+        editModalBody.innerHTML = body.innerHTML;
         
-        // Visual indicator that it's editable
-        title.style.outline = "2px dashed var(--accent)";
-        body.style.outline = "2px dashed var(--accent)";
-        title.focus();
-        
-        const triggerSave = () => {
-            title.style.outline = "none";
-            body.style.outline = "none";
-            title.contentEditable = "false";
-            body.contentEditable = "false";
-            
-            if (window.pywebview && window.activeContextMenuSyncType) {
-                window.pywebview.api.update_mindmap_card_content(
-                    window.activeContextMenuSyncType, 
-                    window.activeContextMenuSyncId, 
-                    title.innerHTML, 
-                    body.innerHTML
-                );
-            }
-        };
-        
-        // End editing if user clicks outside the card
-        const finishEdit = (e) => {
-            if (!card.contains(e.target) && e.target.id !== 'menu-edit') {
-                triggerSave();
-                document.removeEventListener('mousedown', finishEdit);
-            }
-        };
-        
-        setTimeout(() => {
-            document.addEventListener('mousedown', finishEdit);
-        }, 100);
+        editModal.style.display = 'flex';
+        editModalTitle.focus();
     }
 });

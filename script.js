@@ -3199,6 +3199,27 @@ if (helpWritersGuide) {
     });
 }
 
+const helpAbout = document.getElementById('help-about');
+if (helpAbout) {
+    helpAbout.addEventListener('click', () => {
+        const aboutModal = document.getElementById('about-modal');
+        const aboutVersion = document.getElementById('about-version');
+        const btnCloseAbout = document.getElementById('btn-close-about');
+        
+        if (aboutVersion && typeof APP_VERSION !== 'undefined') {
+            aboutVersion.innerText = APP_VERSION;
+        }
+        if (aboutModal) {
+            aboutModal.style.display = 'flex';
+        }
+        if (btnCloseAbout) {
+            btnCloseAbout.addEventListener('click', () => {
+                if (aboutModal) aboutModal.style.display = 'none';
+            }, { once: true });
+        }
+    });
+}
+
 if (btnCloseCorrectionLogs) {
     btnCloseCorrectionLogs.addEventListener('click', () => correctionLogsModal.style.display = 'none');
 }

@@ -186,6 +186,8 @@
                 <div class="dropdown-item" id="help-user-manual"><span>📖 User Manual</span></div>
                 <div class="dropdown-item" id="help-writers-guide"><span>📖 Writer's Guide</span></div>
                 <div class="dropdown-item" id="help-correction-logs"><span>📝 Correction Logs</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-item" id="help-about"><span>ℹ️ About</span></div>
             </div>
         </div>
         <div style="flex-grow: 1;"></div>
@@ -581,14 +583,14 @@
         </div>
     </div>
 
-    </div>
-
     <!-- GitHub Update Modal -->
     <div id="github-update-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="width: 480px;">
-            <h2>🔄 Check for Updates</h2>
-            <div id="github-update-checking" style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 13px;">
-                Checking GitHub for updates...
+            <h3 style="margin-top:0; border-bottom: 1px solid #36424e; padding-bottom: 10px; margin-bottom: 15px;">
+                🔄 Update Check
+            </h3>
+            <div id="github-update-status" style="margin-bottom: 15px; font-weight: bold;">
+                Checking for updates...
             </div>
             <div id="github-update-result" style="display:none;">
                 <div id="github-update-body"></div>
@@ -597,6 +599,20 @@
                 </button>
             </div>
             <button id="btn-close-github-update" class="modal-btn" style="background-color: #4a5568; margin-top: 10px; width: 100%;">Close</button>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="about-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="width: 400px; text-align: center;">
+            <img src="xenohead_logo.png" alt="XenoHead Logo" style="width: 120px; height: 120px; margin-bottom: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+            <h2 style="margin: 0; font-family: 'Outfit', sans-serif; color: #f8fafc;">ReelScript</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">Version <span id="about-version">2.8.0</span></p>
+            <div style="margin: 20px 0; padding: 15px; background: #131a2c; border-radius: 8px; border: 1px solid #2d3748;">
+                <p style="margin: 0; color: #e2e8f0; font-weight: bold;">Built by XenoHead</p>
+                <a href="#" onclick="window.pywebview ? window.pywebview.api.open_url('https://www.xenohead.com') : window.open('https://www.xenohead.com','_blank')" style="color: #1b8adb; text-decoration: none; font-size: 0.9rem; display: block; margin-top: 5px;">www.xenohead.com</a>
+            </div>
+            <button id="btn-close-about" class="modal-btn" style="background-color: #4a5568; width: 100%;">Close</button>
         </div>
     </div>
 

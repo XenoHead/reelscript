@@ -32,6 +32,7 @@ python -m PyInstaller --noconfirm --onefile --windowed ^
   --add-data "writers_guide.html;." ^
   --add-data "writer_guide_hero.png;." ^
   --add-data "writer_guide_blueprint.png;." ^
+  --add-data "xenohead_logo.png;." ^
   --add-data "mindmap.html;." ^
   --add-data "mindmap.css;." ^
   --add-data "mindmap.js;." ^
