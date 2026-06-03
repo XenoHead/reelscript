@@ -5256,6 +5256,19 @@ function renderCharSheetList() {
         actions.style.display = 'flex';
         actions.style.gap = '5px';
         
+        const btnOpen = document.createElement('button');
+        btnOpen.textContent = 'Open';
+        btnOpen.className = 'modal-btn';
+        btnOpen.style.padding = '4px 8px';
+        btnOpen.style.fontSize = '11px';
+        btnOpen.style.background = '#3b82f6';
+        btnOpen.onclick = () => {
+            document.getElementById('char-sheet-focus-title').textContent = char.name;
+            document.getElementById('char-sheet-focus-textarea').value = char.notes || appSettings.characterNotes?.[char.name] || '';
+            document.getElementById('char-sheet-focus-modal').style.display = 'flex';
+            window.activeCharSheetFocus = char.name; // Store reference to active character
+        };
+        
         const btnSave = document.createElement('button');
         btnSave.textContent = 'Save';
         btnSave.className = 'modal-btn';
@@ -5329,6 +5342,7 @@ function renderCharSheetList() {
             }
         };
         
+        actions.appendChild(btnOpen);
         actions.appendChild(btnSave);
         actions.appendChild(btnGrp);
         actions.appendChild(btnRename);
@@ -5415,5 +5429,39 @@ if (btnAddCharGroup) {
             saveCharSheetData();
             renderCharSheetSidebar();
         }
+    });
+}
+
+// Char Sheet Focus Modal Logic
+const btnCloseCharFocus = document.getElementById('btn-close-char-focus');
+const btnSaveCharFocus = document.getElementById('btn-save-char-focus');
+
+if (btnCloseCharFocus) {
+    btnCloseCharFocus.addEventListener('click', () => {
+        document.getElementById('char-sheet-focus-modal').style.display = 'none';
+        window.activeCharSheetFocus = null;
+    });
+}
+
+if (btnSaveCharFocus) {
+    btnSaveCharFocus.addEventListener('click', () => {
+        if (window.activeCharSheetFocus && charSheetData) {
+            const charName = window.activeCharSheetFocus;
+            const newNotes = document.getElementById('char-sheet-focus-textarea').value;
+            
+            const char = charSheetData.characters.find(c => c.name === charName);
+            if (char) {
+                char.notes = newNotes;
+                appSettings.characterNotes = appSettings.characterNotes || {};
+                appSettings.characterNotes[charName] = newNotes;
+                saveCharSheetData();
+                if (window.pywebview) {
+                    window.pywebview.api.update_character_note(charName, newNotes);
+                }
+                renderCharSheetList();
+            }
+        }
+        document.getElementById('char-sheet-focus-modal').style.display = 'none';
+        window.activeCharSheetFocus = null;
     });
 }

@@ -659,6 +659,20 @@
         </div>
     </div>
 
+    <!-- Char Sheet Focus Modal -->
+    <div id="char-sheet-focus-modal" class="modal-overlay" style="display: none; z-index: 10001;">
+        <div class="modal-content" style="width: 600px; height: 500px; display: flex; flex-direction: column; background: #0f1523; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #36424e; padding-bottom: 15px; margin-bottom: 15px;">
+                <h3 id="char-sheet-focus-title" style="margin: 0; color: #f8fafc; font-size: 20px;">Character Name</h3>
+                <button id="btn-close-char-focus" style="background:none; border:none; color:var(--text-muted); font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            <textarea id="char-sheet-focus-textarea" style="flex: 1; width: 100%; background: #1a222c; color: #e2e8f0; border: 1px solid #36424e; border-radius: 4px; padding: 15px; resize: none; outline: none; font-family: Inter, sans-serif; font-size: 14px;" placeholder="Add notes, character bio, etc..."></textarea>
+            <div style="text-align: right; margin-top: 15px;">
+                <button id="btn-save-char-focus" class="modal-btn" style="background: #10b981; padding: 8px 20px; font-weight: bold;">Save & Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Document Statistics Modal -->
     <div id="doc-stats-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="width: 540px;">
