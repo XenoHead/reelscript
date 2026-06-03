@@ -696,6 +696,11 @@ print(file)
         try:
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(content)
+            
+            # Auto-open in Notepad
+            import subprocess
+            subprocess.Popen(['notepad.exe', filepath])
+
             return f"Exported to: {filepath}"
         except Exception as e:
             return f"Export Error: {str(e)}"
@@ -706,6 +711,56 @@ print(file)
         
     def get_mindmap_data(self):
         return self.mindmap_data
+        
+    def open_ai_report_window(self, html_content, project_name):
+        full_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>AI Report: {project_name}</title>
+            <style>
+                body {{
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                    background: #12181f;
+                    color: #e2e8f0;
+                    padding: 20px;
+                    line-height: 1.6;
+                    font-size: 13px;
+                    user-select: text;
+                }}
+                a {{ color: #3b82f6; text-decoration: underline; cursor: pointer; }}
+                .header-bar {{ display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #36424e; padding-bottom: 10px; }}
+                button {{ background: #1b8adb; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }}
+                button:hover {{ background: #1472ba; }}
+            </style>
+            <script>
+                function scrollToLine(line) {{
+                    window.pywebview.api.scroll_main_window_to_line(line);
+                }}
+                async function exportReport() {{
+                    const textContent = document.getElementById('report-content').innerText;
+                    const res = await window.pywebview.api.export_ai_report(textContent, "{project_name}");
+                    if (!res.includes('cancelled')) alert(res);
+                }}
+            </script>
+        </head>
+        <body>
+            <div class="header-bar">
+                <strong>🤖 AI Script Analysis</strong>
+                <button onclick="exportReport()">💾 Export to Notepad</button>
+            </div>
+            <div id="report-content">{html_content}</div>
+        </body>
+        </html>
+        """
+        webview.create_window(f"AI Report: {project_name}", html=full_html, js_api=self, width=650, height=800)
+        return "OK"
+
+    def scroll_main_window_to_line(self, line):
+        if webview.windows:
+            webview.windows[0].evaluate_js(f"if (typeof scrollToLine === 'function') scrollToLine({line});")
+        return "OK"
+        
         
     def open_mindmap_window(self):
         try:

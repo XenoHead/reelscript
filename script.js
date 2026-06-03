@@ -4727,11 +4727,7 @@ function highlightCurrentSceneInSidebar() {
         }
     });
 }
-
 // --- AI Script Analysis Logic ---
-const aiReportSidebar = document.getElementById('ai-report-sidebar');
-const aiAnalysisContent = document.getElementById('ai-analysis-content');
-
 document.getElementById('reports-ai-analysis').addEventListener('click', async () => {
     if (!window.pywebview) {
         alert("AI Analysis requires running through the Python app wrapper.");
@@ -4755,35 +4751,8 @@ document.getElementById('reports-ai-analysis').addEventListener('click', async (
     syncDot.style.backgroundColor = '#10b981';
     syncText.textContent = "Analysis complete";
 
-    // Format Line#X as clickable links to scroll the editor
     const formattedResult = result.replace(/Line#(\d+)/gi, '<a href="#" onclick="scrollToLine($1); return false;" style="color: #3b82f6; text-decoration: underline;">Line#$1</a>');
-
-    aiAnalysisContent.innerHTML = formattedResult;
-    aiReportSidebar.style.display = 'flex';
-});
-
-document.getElementById('btn-close-ai-sidebar').addEventListener('click', () => {
-    aiReportSidebar.style.display = 'none';
-});
-
-document.getElementById('btn-export-ai-report').addEventListener('click', async () => {
-    const content = aiAnalysisContent.innerText;
-    if (!content) return;
-
-    const exportName = window.currentAiReportName || appSettings.projectName || 'Untitled Project';
-
-    if (window.pywebview) {
-        const response = await window.pywebview.api.export_ai_report(content, exportName);
-        if (!response.includes('cancelled')) alert(response);
-    } else {
-        const blob = new Blob([content], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = exportName + '_AI_Report.txt';
-        a.click();
-        URL.revokeObjectURL(url);
-    }
+    window.pywebview.api.open_ai_report_window(formattedResult, window.currentAiReportName);
 });
 
 window.scrollToLine = function (lineNum) {
