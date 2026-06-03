@@ -5117,3 +5117,279 @@ document.getElementById('tools-fix-colors')?.addEventListener('click', () => {
     alert('Color Maps fixed! Stripped inline colors from ' + changedCount + ' line(s) to restore standard block formatting.');
     saveCurrentDocument();
 });
+
+// --- Char Sheet Logic ---
+const toolsCharSheet = document.getElementById('tools-char-sheet');
+const charSheetModal = document.getElementById('char-sheet-modal');
+const btnCloseCharSheet = document.getElementById('btn-close-char-sheet');
+const charSheetList = document.getElementById('char-sheet-list');
+const charSheetSidebarGroups = document.getElementById('char-sheet-sidebar-groups');
+const charSheetSort = document.getElementById('char-sheet-sort');
+const btnCharSheetSortDir = document.getElementById('btn-char-sheet-sort-dir');
+const btnAddCharacter = document.getElementById('btn-add-character');
+const btnAddCharGroup = document.getElementById('btn-add-char-group');
+
+let charSheetData = null;
+let activeCharGroupId = 'all'; // 'all', 'ungrouped', or groupId
+let charSortAsc = true;
+
+function openCharSheet() {
+    if (!appSettings.projectDocuments['MindMapData']) {
+        window.generateMindmapData();
+    }
+    charSheetData = JSON.parse(appSettings.projectDocuments['MindMapData']);
+    if (!charSheetData.groups) charSheetData.groups = { scenes: [], characters: [] };
+    if (!charSheetData.groups.characters) charSheetData.groups.characters = [];
+    
+    renderCharSheetSidebar();
+    renderCharSheetList();
+    charSheetModal.style.display = 'flex';
+}
+
+function saveCharSheetData() {
+    appSettings.projectDocuments['MindMapData'] = JSON.stringify(charSheetData);
+    saveSettings();
+    if (window.pywebview) {
+        window.pywebview.api.set_mindmap_data(charSheetData).then(() => {
+            window.pywebview.api.notify_mindmap_updated();
+        });
+    }
+}
+
+function renderCharSheetSidebar() {
+    charSheetSidebarGroups.innerHTML = '';
+    
+    const createSidebarBtn = (id, label, icon) => {
+        const btn = document.createElement('button');
+        btn.className = 'modal-btn';
+        btn.style.width = '100%';
+        btn.style.textAlign = 'left';
+        btn.style.padding = '8px 10px';
+        btn.style.marginBottom = '4px';
+        btn.style.fontSize = '13px';
+        btn.style.background = activeCharGroupId === id ? '#1b8adb' : 'transparent';
+        btn.style.color = activeCharGroupId === id ? '#fff' : '#cbd5e1';
+        btn.style.border = activeCharGroupId === id ? '1px solid #3b82f6' : '1px solid transparent';
+        btn.style.justifyContent = 'flex-start';
+        btn.style.display = 'flex';
+        btn.style.alignItems = 'center';
+        btn.innerHTML = `<span style="margin-right:8px; font-size:16px;">${icon}</span><span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${label}</span>`;
+        btn.addEventListener('click', () => {
+            activeCharGroupId = id;
+            renderCharSheetSidebar();
+            renderCharSheetList();
+        });
+        return btn;
+    };
+    
+    charSheetSidebarGroups.appendChild(createSidebarBtn('all', 'All Characters', '🌍'));
+    charSheetSidebarGroups.appendChild(createSidebarBtn('ungrouped', 'Ungrouped', '📁'));
+    
+    charSheetData.groups.characters.forEach(g => {
+        charSheetSidebarGroups.appendChild(createSidebarBtn(g.id, g.name, '📂'));
+    });
+}
+
+function renderCharSheetList() {
+    charSheetList.innerHTML = '';
+    let chars = [...charSheetData.characters];
+    
+    // Filter by group
+    if (activeCharGroupId === 'ungrouped') {
+        chars = chars.filter(c => !c.groupId);
+    } else if (activeCharGroupId !== 'all') {
+        chars = chars.filter(c => c.groupId === activeCharGroupId);
+    }
+    
+    // Sort
+    const sortProp = charSheetSort.value;
+    chars.sort((a, b) => {
+        let valA, valB;
+        if (sortProp === 'abc') {
+            valA = a.name.toLowerCase();
+            valB = b.name.toLowerCase();
+        } else if (sortProp === 'lines') {
+            valA = a.dialogueCount || 0;
+            valB = b.dialogueCount || 0;
+        } else if (sortProp === 'scenes') {
+            valA = a.scenes ? a.scenes.length : 0;
+            valB = b.scenes ? b.scenes.length : 0;
+        }
+        
+        if (valA < valB) return charSortAsc ? -1 : 1;
+        if (valA > valB) return charSortAsc ? 1 : -1;
+        return 0;
+    });
+    
+    chars.forEach(char => {
+        const charEl = document.createElement('div');
+        charEl.style.background = '#1a222c';
+        charEl.style.border = '1px solid #36424e';
+        charEl.style.borderRadius = '6px';
+        charEl.style.padding = '15px';
+        
+        const header = document.createElement('div');
+        header.style.display = 'flex';
+        header.style.justifyContent = 'space-between';
+        header.style.alignItems = 'center';
+        header.style.marginBottom = '10px';
+        
+        const titleArea = document.createElement('div');
+        const nameTitle = document.createElement('h4');
+        nameTitle.style.margin = '0 0 5px 0';
+        nameTitle.style.color = '#f8fafc';
+        nameTitle.style.fontSize = '16px';
+        nameTitle.textContent = char.name;
+        
+        const statsStr = `Scenes: ${char.scenes ? char.scenes.length : 0} | Lines: ${char.dialogueCount || 0}`;
+        const statsLabel = document.createElement('div');
+        statsLabel.style.fontSize = '12px';
+        statsLabel.style.color = '#94a3b8';
+        statsLabel.textContent = statsStr;
+        
+        titleArea.appendChild(nameTitle);
+        titleArea.appendChild(statsLabel);
+        
+        const actions = document.createElement('div');
+        actions.style.display = 'flex';
+        actions.style.gap = '5px';
+        
+        const btnGrp = document.createElement('button');
+        btnGrp.textContent = 'Group';
+        btnGrp.className = 'modal-btn';
+        btnGrp.style.padding = '4px 8px';
+        btnGrp.style.fontSize = '11px';
+        btnGrp.style.background = '#4a5568';
+        btnGrp.onclick = () => {
+            const groupSelect = prompt('Enter Group ID or Name to assign to, or leave blank to ungroup:\nAvailable: ' + charSheetData.groups.characters.map(g => g.name).join(', '));
+            if (groupSelect !== null) {
+                const grp = charSheetData.groups.characters.find(g => g.name.toLowerCase() === groupSelect.toLowerCase() || g.id === groupSelect);
+                if (grp) {
+                    char.groupId = grp.id;
+                } else {
+                    delete char.groupId;
+                }
+                saveCharSheetData();
+                renderCharSheetList();
+            }
+        };
+        
+        const btnRename = document.createElement('button');
+        btnRename.textContent = 'Rename';
+        btnRename.className = 'modal-btn';
+        btnRename.style.padding = '4px 8px';
+        btnRename.style.fontSize = '11px';
+        btnRename.style.background = '#f59e0b';
+        btnRename.onclick = () => {
+            const newName = prompt('Enter new name for ' + char.name + ':', char.name);
+            if (newName && newName.trim()) {
+                // Update characterNotes key if it exists
+                appSettings.characterNotes = appSettings.characterNotes || {};
+                if (appSettings.characterNotes[char.name]) {
+                    appSettings.characterNotes[newName.trim().toUpperCase()] = appSettings.characterNotes[char.name];
+                    delete appSettings.characterNotes[char.name];
+                }
+                char.name = newName.trim().toUpperCase();
+                saveCharSheetData();
+                renderCharSheetList();
+            }
+        };
+        
+        const btnDel = document.createElement('button');
+        btnDel.textContent = 'Delete';
+        btnDel.className = 'modal-btn';
+        btnDel.style.padding = '4px 8px';
+        btnDel.style.fontSize = '11px';
+        btnDel.style.background = '#ef4444';
+        btnDel.onclick = () => {
+            if (confirm(`Delete character ${char.name}?`)) {
+                charSheetData.characters = charSheetData.characters.filter(c => c.name !== char.name);
+                saveCharSheetData();
+                renderCharSheetList();
+            }
+        };
+        
+        actions.appendChild(btnGrp);
+        actions.appendChild(btnRename);
+        actions.appendChild(btnDel);
+        
+        header.appendChild(titleArea);
+        header.appendChild(actions);
+        
+        const textArea = document.createElement('textarea');
+        textArea.style.width = '100%';
+        textArea.style.minHeight = '100px';
+        textArea.style.background = '#0f1523';
+        textArea.style.color = '#e2e8f0';
+        textArea.style.border = '1px solid #36424e';
+        textArea.style.borderRadius = '4px';
+        textArea.style.padding = '10px';
+        textArea.style.resize = 'vertical';
+        textArea.style.outline = 'none';
+        textArea.style.fontFamily = 'Inter, sans-serif';
+        textArea.style.fontSize = '13px';
+        textArea.value = char.notes || appSettings.characterNotes?.[char.name] || '';
+        textArea.placeholder = 'Add notes, character bio, etc...';
+        textArea.addEventListener('input', () => {
+            char.notes = textArea.value;
+            appSettings.characterNotes = appSettings.characterNotes || {};
+            appSettings.characterNotes[char.name] = textArea.value;
+            saveCharSheetData();
+            if (window.pywebview) {
+                window.pywebview.api.update_character_note(char.name, textArea.value);
+            }
+        });
+        
+        charEl.appendChild(header);
+        charEl.appendChild(textArea);
+        charSheetList.appendChild(charEl);
+    });
+}
+
+if (toolsCharSheet) {
+    toolsCharSheet.addEventListener('click', openCharSheet);
+}
+if (btnCloseCharSheet) {
+    btnCloseCharSheet.addEventListener('click', () => charSheetModal.style.display = 'none');
+}
+if (btnCharSheetSortDir) {
+    btnCharSheetSortDir.addEventListener('click', () => {
+        charSortAsc = !charSortAsc;
+        btnCharSheetSortDir.textContent = charSortAsc ? '↓' : '↑';
+        renderCharSheetList();
+    });
+}
+if (charSheetSort) {
+    charSheetSort.addEventListener('change', renderCharSheetList);
+}
+if (btnAddCharacter) {
+    btnAddCharacter.addEventListener('click', () => {
+        const name = prompt('Enter new character name:');
+        if (name && name.trim()) {
+            const charObj = {
+                name: name.trim().toUpperCase(),
+                scenes: [],
+                dialogueCount: 0,
+                intro: '',
+                notes: ''
+            };
+            if (activeCharGroupId !== 'all' && activeCharGroupId !== 'ungrouped') {
+                charObj.groupId = activeCharGroupId;
+            }
+            charSheetData.characters.unshift(charObj);
+            saveCharSheetData();
+            renderCharSheetList();
+        }
+    });
+}
+if (btnAddCharGroup) {
+    btnAddCharGroup.addEventListener('click', () => {
+        const gname = prompt('Enter new group name:');
+        if (gname && gname.trim()) {
+            const id = 'grp_' + Date.now();
+            charSheetData.groups.characters.push({ id: id, name: gname.trim(), collapsed: false });
+            saveCharSheetData();
+            renderCharSheetSidebar();
+        }
+    });
+}
