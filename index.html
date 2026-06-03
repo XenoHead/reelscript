@@ -130,6 +130,7 @@
                         <div class="dropdown-item" id="tools-clean-spaces"><span>Clean Spacing</span></div>
                         <div class="dropdown-item" id="tools-cut-double-parens"><span>Cut Double ( )</span></div>
                         <div class="dropdown-item" id="tools-fix-parenths"><span>Fix Parenths</span></div>
+                        <div class="dropdown-item" id="tools-capitalize-names"><span>Capitalize Names</span></div>
                     </div>
                 </div>
                 <div class="dropdown-item has-submenu">
@@ -863,6 +864,23 @@
                 <!-- Changelog bullets dynamically loaded here -->
             </div>
             <button id="btn-close-changelog" class="modal-btn" style="background-color: #1b8adb; font-weight: bold; padding: 10px; width: 100%; border-radius: 6px;">Awesome!</button>
+        </div>
+    </div>
+
+    <!-- Capitalize Names Modal -->
+    <div id="cap-names-modal" class="modal-overlay" style="display: none; z-index: 10005;">
+        <div class="modal-content" style="width: 450px; display: flex; flex-direction: column; max-height: 70vh;">
+            <h2 style="margin-top: 0;">Capitalize Names</h2>
+            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;">
+                Find and capitalize all character names inside non-dialogue blocks. Uncheck common words that shouldn't be capitalized everywhere.
+            </p>
+            <div id="cap-names-list" style="flex: 1; overflow-y: auto; background: #0f1523; border: 1px solid #36424e; border-radius: 4px; padding: 10px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;">
+                <!-- Checkboxes populated here -->
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-execute-cap-names" class="modal-btn" style="flex: 1; background-color: #10b981; font-weight: bold; padding: 10px; border-radius: 6px;">Capitalize Selected</button>
+                <button id="btn-close-cap-names" class="modal-btn" style="flex: 1; background-color: #4a5568; font-weight: bold; padding: 10px; border-radius: 6px;">Cancel</button>
+            </div>
         </div>
     </div>
 

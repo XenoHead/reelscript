@@ -5594,3 +5594,111 @@ if (btnCloseCharHelp && charSheetHelpModal) {
         charSheetHelpModal.style.display = 'none';
     });
 }
+
+// Tools: Capitalize Names
+const btnToolsCapitalizeNames = document.getElementById('tools-capitalize-names');
+const capNamesModal = document.getElementById('cap-names-modal');
+const capNamesList = document.getElementById('cap-names-list');
+const btnExecuteCapNames = document.getElementById('btn-execute-cap-names');
+const btnCloseCapNames = document.getElementById('btn-close-cap-names');
+
+if (btnToolsCapitalizeNames) {
+    btnToolsCapitalizeNames.addEventListener('click', () => {
+        // Extract unique names from character blocks
+        const uniqueNames = new Set();
+        blocks.forEach(b => {
+            if (b.type === 'character') {
+                // Strip parentheticals like "JOHN (V.O.)"
+                let name = b.text.split('(')[0].trim().toUpperCase();
+                if (name) uniqueNames.add(name);
+            }
+        });
+        
+        capNamesList.innerHTML = '';
+        if (uniqueNames.size === 0) {
+            capNamesList.innerHTML = '<div style="color: #94a3b8; font-size: 13px; text-align: center; padding: 10px;">No character blocks found in the script.</div>';
+            btnExecuteCapNames.disabled = true;
+            btnExecuteCapNames.style.opacity = '0.5';
+        } else {
+            btnExecuteCapNames.disabled = false;
+            btnExecuteCapNames.style.opacity = '1';
+            
+            const sortedNames = Array.from(uniqueNames).sort();
+            sortedNames.forEach(name => {
+                const label = document.createElement('label');
+                label.style.display = 'flex';
+                label.style.alignItems = 'center';
+                label.style.gap = '8px';
+                label.style.cursor = 'pointer';
+                label.style.color = '#e2e8f0';
+                label.style.fontSize = '14px';
+                label.style.padding = '4px 0';
+                
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.value = name;
+                cb.checked = true; // Checked by default
+                
+                label.appendChild(cb);
+                label.appendChild(document.createTextNode(name));
+                capNamesList.appendChild(label);
+            });
+        }
+        
+        capNamesModal.style.display = 'flex';
+    });
+}
+
+if (btnCloseCapNames) {
+    btnCloseCapNames.addEventListener('click', () => {
+        capNamesModal.style.display = 'none';
+    });
+}
+
+if (btnExecuteCapNames) {
+    btnExecuteCapNames.addEventListener('click', () => {
+        const checkboxes = capNamesList.querySelectorAll('input[type="checkbox"]:checked');
+        const selectedNames = Array.from(checkboxes).map(cb => cb.value);
+        
+        if (selectedNames.length === 0) {
+            alert('No names selected.');
+            return;
+        }
+        
+        // Sort names by length descending
+        selectedNames.sort((a, b) => b.length - a.length);
+        
+        let replacementsMade = 0;
+        
+        blocks.forEach(b => {
+            if (b.type !== 'dialogue' && b.type !== 'character') {
+                selectedNames.forEach(name => {
+                    const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp('\\b' + escapeRegExp(name) + '\\b', 'g');
+                    
+                    // We need a case-insensitive match but only replace if it's not already uppercase
+                    // To count accurate replacements made, we check if it doesn't strictly match the uppercase.
+                    // Wait, regex with 'g' and NOT 'i' will only match exact. We want 'gi'
+                    const iregex = new RegExp('\\b' + escapeRegExp(name) + '\\b', 'gi');
+                    
+                    const matches = b.text.match(iregex);
+                    if (matches) {
+                        matches.forEach(m => {
+                            if (m !== name.toUpperCase()) {
+                                replacementsMade++;
+                            }
+                        });
+                    }
+                    
+                    b.text = b.text.replace(iregex, name.toUpperCase());
+                });
+            }
+        });
+        
+        renderBlocks();
+        saveScript();
+        
+        capNamesModal.style.display = 'none';
+        alert(`Capitalization complete. Capitalized ${replacementsMade} name instances.`);
+    });
+}
