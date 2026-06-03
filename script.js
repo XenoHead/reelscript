@@ -2877,7 +2877,8 @@ async function executeCloudLoad() {
     syncText.textContent = 'Loading latest from cloud...';
 
     const projectName = appSettings.projectName || "Untitled Project";
-    const result = await window.pywebview.api.load_latest_cloud(appSettings.sharedFolderRoot, projectName);
+    const cloudTarget = appSettings.sharedFolderRoot || appSettings.cloudDir;
+    const result = await window.pywebview.api.load_latest_cloud(cloudTarget, projectName);
 
     if (result.error) {
         alert(result.error);
@@ -2931,7 +2932,8 @@ if (shareLoadLatest) {
             return;
         }
 
-        if (!appSettings.sharedFolderRoot) {
+        const cloudTarget = appSettings.sharedFolderRoot || appSettings.cloudDir;
+        if (!cloudTarget) {
             alert("Please configure a Shared Folder root in 'Share -> Configure Shared Folder...' first.");
             return;
         }
@@ -2980,7 +2982,8 @@ if (shareSaveLatest) {
             return;
         }
 
-        if (!appSettings.sharedFolderRoot) {
+        const cloudTarget = appSettings.sharedFolderRoot || appSettings.cloudDir;
+        if (!cloudTarget) {
             alert("Please configure a Shared Folder root in 'Share -> Configure Shared Folder...' first.");
             return;
         }
@@ -2992,7 +2995,8 @@ if (shareSaveLatest) {
         syncDot.style.backgroundColor = '#f59e0b';
         syncText.textContent = 'Saving latest to cloud...';
 
-        const result = await window.pywebview.api.save_latest_cloud(appSettings.sharedFolderRoot, projectName, projectData);
+
+        const result = await window.pywebview.api.save_latest_cloud(cloudTarget, projectName, projectData);
 
         if (result.error) {
             alert(result.error);
@@ -3065,7 +3069,7 @@ if (changelogModal) {
 }
 
 document.getElementById('share-gdrive').addEventListener('click', () => {
-    const root = appSettings.sharedFolderRoot;
+    const root = appSettings.sharedFolderRoot || appSettings.cloudDir;
     if (!root) {
         alert("No shared folder root configured.\n\nGo to Share → Configure Shared Folder to set one.");
         return;
