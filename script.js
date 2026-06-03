@@ -5604,48 +5604,69 @@ const btnCloseCapNames = document.getElementById('btn-close-cap-names');
 
 if (btnToolsCapitalizeNames) {
     btnToolsCapitalizeNames.addEventListener('click', () => {
-        // Extract unique names from character blocks
-        const uniqueNames = new Set();
-        blocks.forEach(b => {
-            if (b.type === 'character') {
-                // Strip parentheticals like "JOHN (V.O.)"
-                let name = b.text.split('(')[0].trim().toUpperCase();
-                if (name) uniqueNames.add(name);
-            }
-        });
-        
-        capNamesList.innerHTML = '';
-        if (uniqueNames.size === 0) {
-            capNamesList.innerHTML = '<div style="color: #94a3b8; font-size: 13px; text-align: center; padding: 10px;">No character blocks found in the script.</div>';
-            btnExecuteCapNames.disabled = true;
-            btnExecuteCapNames.style.opacity = '0.5';
-        } else {
-            btnExecuteCapNames.disabled = false;
-            btnExecuteCapNames.style.opacity = '1';
-            
-            const sortedNames = Array.from(uniqueNames).sort();
-            sortedNames.forEach(name => {
-                const label = document.createElement('label');
-                label.style.display = 'flex';
-                label.style.alignItems = 'center';
-                label.style.gap = '8px';
-                label.style.cursor = 'pointer';
-                label.style.color = '#e2e8f0';
-                label.style.fontSize = '14px';
-                label.style.padding = '4px 0';
-                
-                const cb = document.createElement('input');
-                cb.type = 'checkbox';
-                cb.value = name;
-                cb.checked = true; // Checked by default
-                
-                label.appendChild(cb);
-                label.appendChild(document.createTextNode(name));
-                capNamesList.appendChild(label);
+        try {
+            // Extract unique names from character blocks
+            const uniqueNames = new Set();
+            blocks.forEach(b => {
+                if (b.type === 'character') {
+                    // Strip parentheticals like "JOHN (V.O.)"
+                    let name = b.text.split('(')[0].trim().toUpperCase();
+                    if (name) uniqueNames.add(name);
+                }
             });
+            
+            // Also grab from charSheetData if loaded
+            if (typeof charSheetData !== 'undefined' && charSheetData && charSheetData.characters) {
+                charSheetData.characters.forEach(c => {
+                    if (c.name) uniqueNames.add(c.name.trim().toUpperCase());
+                });
+            } else if (appSettings && appSettings.projectDocuments && appSettings.projectDocuments['MindMapData']) {
+                // If not loaded into memory yet, try parsing from settings
+                try {
+                    const parsed = JSON.parse(appSettings.projectDocuments['MindMapData']);
+                    if (parsed && parsed.characters) {
+                        parsed.characters.forEach(c => {
+                            if (c.name) uniqueNames.add(c.name.trim().toUpperCase());
+                        });
+                    }
+                } catch(e) {}
+            }
+            
+            capNamesList.innerHTML = '';
+            if (uniqueNames.size === 0) {
+                capNamesList.innerHTML = '<div style="color: #94a3b8; font-size: 13px; text-align: center; padding: 10px;">No character blocks found in the script.</div>';
+                btnExecuteCapNames.disabled = true;
+                btnExecuteCapNames.style.opacity = '0.5';
+            } else {
+                btnExecuteCapNames.disabled = false;
+                btnExecuteCapNames.style.opacity = '1';
+                
+                const sortedNames = Array.from(uniqueNames).sort();
+                sortedNames.forEach(name => {
+                    const label = document.createElement('label');
+                    label.style.display = 'flex';
+                    label.style.alignItems = 'center';
+                    label.style.gap = '8px';
+                    label.style.cursor = 'pointer';
+                    label.style.color = '#e2e8f0';
+                    label.style.fontSize = '14px';
+                    label.style.padding = '4px 0';
+                    
+                    const cb = document.createElement('input');
+                    cb.type = 'checkbox';
+                    cb.value = name;
+                    cb.checked = true; // Checked by default
+                    
+                    label.appendChild(cb);
+                    label.appendChild(document.createTextNode(name));
+                    capNamesList.appendChild(label);
+                });
+            }
+            
+            capNamesModal.style.display = 'flex';
+        } catch (e) {
+            alert('Error loading Capitalize Names: ' + e.message);
         }
-        
-        capNamesModal.style.display = 'flex';
     });
 }
 
