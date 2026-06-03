@@ -79,14 +79,18 @@ HOW TO SHARE YOUR EDITS:
 ========================================================================
 
 THE LEFT SIDEBAR:
-On the far left, you will see three main icons:
+On the far left, you will see five main icons:
 - 📋 Script: Shows your Project Documents (Default Document, Revision Notes, 
-  and Title Page). Click these to switch between them.
+  and Title Page). Click these to switch between them. Right-click any document 
+  to Move Up, Move Down, Rename, or Delete it.
 - 🎬 Scenes: A dynamically generated list of every Scene Heading in the 
   script. Click a scene to instantly jump to it.
 - 💬 My Notes: A PRIVATE scratchpad. Anything you type here stays strictly 
   on your computer. It does NOT save into the shared project file. Use this 
   for your own personal brainstorming.
+- 💾 Save: Quickly save your project without opening the File menu.
+- 📌 Stay On Top: Pins the application window above all other windows so it 
+  is never hidden. The icon turns red when active.
 
 SMART FORMATTING (TAB & ENTER):
 You do not need to click formatting buttons while typing. The editor knows 

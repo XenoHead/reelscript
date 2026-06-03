@@ -19,6 +19,15 @@
         <div class="global-toolbar">
             <button id="btn-toggle-collapse">Toggle Size</button>
             <button id="btn-sort-cards">Reset Layout</button>
+            <button id="btn-add-group">+ Add Group</button>
+            <label for="sort-select" style="margin-left: 15px; align-self: center; font-size: 14px; font-weight: 500;">Sort By:</label>
+            <select id="sort-select" style="padding: 5px; border-radius: 4px; background: #333; color: white; border: 1px solid #555;">
+                <option value="none">None</option>
+                <option value="lines">Dialogue Lines</option>
+                <option value="scenes">Scene Count</option>
+                <option value="abc">A-Z</option>
+                <option value="first">First Scene</option>
+            </select>
             <button id="add-sticky-btn" style="display:none;">+ Add Note</button>
         </div>
         <!-- Corkboard View -->
@@ -47,6 +56,17 @@
             <div class="modal-notes-label">Notes & Details:</div>
             <div id="modal-notes" class="modal-notes" contenteditable="true"></div>
         </div>
+    </div>
+
+    <div id="card-context-menu" class="context-menu" style="display: none;">
+        <div class="menu-item" id="menu-open">Open</div>
+        <div class="menu-item" id="menu-edit">Edit</div>
+        <div class="menu-item" id="menu-rescan">Rescan</div>
+        <div class="menu-item has-submenu" id="menu-group">
+            Add to Group &raquo;
+            <div id="group-submenu" class="submenu"></div>
+        </div>
+        <div class="menu-item" id="menu-close">Close</div>
     </div>
 
     <script src="mindmap.js"></script>

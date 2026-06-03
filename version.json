@@ -3,6 +3,7 @@
     "last_updated": "2026-05-31",
     "changelog": [
         "Added prompt confirmation before overwriting with cloud version.",
-        "Added Update Executable on Cloud feature."
+        "Added Update Executable on Cloud feature.",
+        "Implement portable settings, fix icon loading crash on Windows, and update workspace features."
     ]
 }

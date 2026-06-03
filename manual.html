@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReelScript - Complete User Manual</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="movie-icon.png" type="image/png">
+    
+    <style>
+        /* Modern CSS Custom Properties / Theme Tokens */
+        :root[data-theme="dark"] {
+            --bg-primary: #0b0f19;
+            --bg-secondary: #131a2c;
+            --bg-tertiary: #1e293b;
+            --bg-accent: rgba(99, 102, 241, 0.15);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --accent-rgb: 99, 102, 241;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.2);
+            --sidebar-width: 280px;
+        }
+
+        :root[data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --bg-accent: rgba(99, 102, 241, 0.08);
+            --border-color: rgba(15, 23, 42, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --accent: #4f46e5;
+            --accent-glow: rgba(79, 70, 229, 0.2);
+            --accent-rgb: 79, 70, 229;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+            --sidebar-width: 280px;
+        }
+
+        /* Base Resets & Global Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin: 2.5rem 0 1.25rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            margin: 1.5rem 0 0.75rem 0;
+            color: var(--text-primary);
+        }
+
+        p {
+            margin-bottom: 1.25rem;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: var(--text-primary);
+            text-decoration: underline;
+        }
+
+        /* Layout Structure */
+        .app-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            object-fit: contain;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--text-primary) 40%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .search-container {
+            padding: 1rem 1.5rem;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.6rem 1rem 0.6rem 2.2rem;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.875rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 2.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            width: 14px;
+            height: 14px;
+        }
+
+        .nav-menu {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-primary);
+            background-color: var(--bg-tertiary);
+            text-decoration: none;
+        }
+
+        .nav-link.active {
+            color: var(--accent);
+            background-color: var(--bg-accent);
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Main Content Panel */
+        .content-area {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 3rem 4rem;
+            max-width: 1100px;
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Header / Controls */
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .theme-toggle-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            background-color: var(--bg-secondary);
+        }
+
+        .theme-toggle-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--text-muted);
+            box-shadow: var(--card-shadow);
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+            filter: blur(40px);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: var(--bg-accent);
+            border: 1px solid rgba(var(--accent-rgb), 0.2);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+        }
+
+        .hero-desc {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 650px;
+            margin-bottom: 0;
+        }
+
+        /* Callouts / Alerts */
+        .callout {
+            background-color: var(--bg-secondary);
+            border-left: 4px solid var(--accent);
+            border-radius: 0 12px 12px 0;
+            padding: 1.25rem 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+
+        .callout-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .callout.info {
+            border-left-color: var(--accent);
+            background-color: rgba(99, 102, 241, 0.03);
+        }
+        
+        .callout.warning {
+            border-left-color: var(--warning);
+            background-color: rgba(245, 158, 11, 0.03);
+        }
+
+        .callout.warning .callout-title {
+            color: var(--warning);
+        }
+
+        .callout.success {
+            border-left-color: var(--success);
+            background-color: rgba(16, 185, 129, 0.03);
+        }
+
+        .callout.success .callout-title {
+            color: var(--success);
+        }
+
+        /* Grid Elements */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.15), 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            background: var(--bg-accent);
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-body {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+        }
+
+        /* Image Display styles */
+        .image-container {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: var(--bg-secondary);
+            box-shadow: var(--card-shadow);
+            margin: 2rem 0;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .image-container:hover img {
+            transform: scale(1.015);
+        }
+
+        .image-caption {
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Keyboard Shortcut Styles */
+        kbd {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), inset 0 2px 0 0 rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            display: inline-block;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            font-weight: 500;
+            line-height: 1.4;
+            padding: 2px 6px;
+            white-space: nowrap;
+        }
+
+        /* Shortcut Grid Table */
+        .shortcut-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .shortcut-table th, .shortcut-table td {
+            padding: 0.875rem 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .shortcut-table th {
+            background-color: var(--bg-tertiary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .shortcut-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .shortcut-table tr:hover td {
+            background-color: var(--bg-accent);
+        }
+
+        /* Interactive Simulator Components */
+        .interactive-container {
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            background-color: var(--bg-secondary);
+            box-shadow: var(--card-shadow);
+            margin: 2rem 0;
+        }
+
+        .interactive-header {
+            background-color: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .interactive-tag {
+            background-color: var(--accent-glow);
+            color: var(--accent);
+            border: 1px solid rgba(var(--accent-rgb), 0.2);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .interactive-body {
+            padding: 1.5rem;
+        }
+
+        /* Profile Selection Simulator */
+        .profile-picker {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            background-color: var(--bg-primary);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .profile-picker input[type="text"] {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            padding: 6px 12px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .profile-picker input[type="text"]:focus {
+            border-color: var(--accent);
+        }
+
+        .color-well-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-well {
+            -webkit-appearance: none;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            background: none;
+            outline: none;
+        }
+
+        .color-well::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .color-well::-webkit-color-swatch {
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+        }
+
+        /* Script Demo Area */
+        .script-canvas {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            min-height: 250px;
+            padding: 2rem;
+            font-family: "Courier New", Courier, monospace;
+            color: var(--text-primary);
+            position: relative;
+            outline: none;
+            overflow-y: auto;
+        }
+
+        /* Simulated revision markup */
+        .script-line {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 0.5rem;
+            min-height: 1.2rem;
+        }
+
+        .revision-asterisk {
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-weight: bold;
+            cursor: help;
+        }
+
+        .revision-tooltip {
+            position: absolute;
+            background: #1e293b;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            bottom: 120%;
+            left: 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .revision-asterisk:hover + .revision-tooltip {
+            opacity: 1;
+        }
+
+        /* Simulator controls */
+        .sim-btn {
+            background-color: var(--accent);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .sim-btn:hover {
+            opacity: 0.9;
+        }
+
+        .sim-btn.secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .sim-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        /* Smart screenplay editor simulator */
+        .editor-simulator {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            font-family: "Courier New", Courier, monospace;
+            position: relative;
+        }
+
+        .sim-meta {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sim-element-badge {
+            background-color: var(--bg-accent);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .editor-input-area {
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            min-height: 180px;
+            padding: 1rem;
+            outline: none;
+            background-color: var(--bg-secondary);
+            font-size: 0.95rem;
+        }
+
+        .editor-line {
+            margin-bottom: 0.25rem;
+            min-height: 1.2rem;
+            width: 100%;
+        }
+
+        /* Screenplay standards styles for simulator */
+        .editor-line.scene-heading {
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-top: 1rem;
+            color: var(--text-primary);
+        }
+
+        .editor-line.action {
+            margin-left: 0;
+            color: var(--text-secondary);
+        }
+
+        .editor-line.character {
+            text-transform: uppercase;
+            text-align: center;
+            width: 60%;
+            margin-left: auto;
+            margin-right: auto;
+            color: var(--text-primary);
+            margin-top: 0.8rem;
+        }
+
+        .editor-line.dialogue {
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+            color: var(--text-secondary);
+        }
+
+        .editor-line.parenthetical {
+            width: 40%;
+            margin-left: auto;
+            margin-right: auto;
+            color: var(--text-muted);
+        }
+
+        /* List Items */
+        ul.custom-list {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        ul.custom-list li {
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        ul.custom-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 2px;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* Floating Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--card-shadow);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 99;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* Hamburger button for Mobile */
+        .mobile-header {
+            display: none;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 101;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .hamburger-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .content-area {
+                margin-left: 0;
+                padding: 5rem 2rem 3rem 2rem;
+            }
+
+            .mobile-header {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .hero {
+                padding: 1.5rem;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-picker {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .color-well-container {
+                justify-content: space-between;
+            }
+        }
+
+        /* Highlights */
+        mark {
+            background-color: var(--bg-accent);
+            color: var(--text-primary);
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <img src="movie-icon.png" alt="ReelScript Logo" style="height: 24px; width: 24px; border-radius: 4px;">
+            <span class="sidebar-title">ReelScript Manual</span>
+        </div>
+        <button class="hamburger-btn" id="mobile-toggle" aria-label="Toggle Menu">☰</button>
+    </div>
+
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="app-sidebar">
+            <div class="sidebar-header">
+                <img class="sidebar-logo" src="movie-icon.png" alt="ReelScript Logo">
+                <span class="sidebar-title">ReelScript 2.5</span>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" class="search-input" id="search-input" placeholder="Search manual...">
+                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#welcome" class="nav-link active" data-section="welcome">
+                    <span>👋</span> Welcome
+                </a>
+                <a href="#installation" class="nav-link" data-section="installation">
+                    <span>⚙️</span> 1. Installation
+                </a>
+                <a href="#collaboration" class="nav-link" data-section="collaboration">
+                    <span>🤝</span> 2. Collaboration
+                </a>
+                <a href="#interface" class="nav-link" data-section="interface">
+                    <span>🎬</span> 3. Writing & Layout
+                </a>
+                <a href="#ai-assistant" class="nav-link" data-section="ai-assistant">
+                    <span>🤖</span> 4. AI Assistant
+                </a>
+                <a href="#backups" class="nav-link" data-section="backups">
+                    <span>💽</span> 5. Backups & Sync
+                </a>
+                <a href="#tools" class="nav-link" data-section="tools">
+                    <span>🛠️</span> 6. Useful Features
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Theme Mode</span>
+                <button class="theme-toggle-btn" id="theme-toggle" title="Toggle color scheme">
+                    <!-- Sun icon -->
+                    <svg id="sun-icon" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <!-- Moon icon -->
+                    <svg id="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content-area">
+            
+            <!-- Welcome / Hero Section -->
+            <section id="welcome" class="searchable">
+                <div class="hero">
+                    <div class="hero-badge">
+                        <span>🚀</span> ReelScript 2.5 Manual
+                    </div>
+                    <h1>Unlock Your Screenwriting Workflow</h1>
+                    <p class="hero-desc">
+                        Welcome to the official ReelScript documentation. Learn how to write screenplay formats natively, track real-time modifications with co-writers, backup your screenplays seamlessly, and collaborate with advanced Google Gemini AI models.
+                    </p>
+                </div>
+                
+                <div class="image-container">
+                    <img src="screenshot.png" alt="ReelScript editor workspace mockup screenshot">
+                    <div class="image-caption">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        Figure 1.1: ReelScript core visual editor with the Scene Navigator panel and integrated dark mode interface.
+                    </div>
+                </div>
+            </section>
+
+            <!-- 1. Installation -->
+            <section id="installation" class="searchable">
+                <h2><span>⚙️</span> 1. Installation & First Steps</h2>
+                <p>Setting up your scripting workstation takes less than two minutes. Follow the procedures outlined below to configure your user signature and project parameters.</p>
+                
+                <h3>1. Running the Setup</h3>
+                <p>Download the installer bundle <mark>ReelScript_Setup.exe</mark> and launch it on your Windows machine. The wizard registers custom file systems and links all <mark>.rsp</mark> (ReelScript Project) files to the workspace automatically. A desktop shortcut is added for easy loading.</p>
+
+                <h3>2. Author Profiles (Crucial step)</h3>
+                <p>ReelScript utilizes a custom tagging signature to attribute code revisions. Before writing, please define your editor credentials:</p>
+                
+                <ul class="custom-list">
+                    <li>Launch the ReelScript application window.</li>
+                    <li>Navigate to the top menu bar: <strong>Customize</strong> &rarr; <strong>Author Profile & Revision Color</strong>.</li>
+                    <li>Provide your signature/name and click the swatch input to designate a unique revision mark color (e.g. Purple, Green, Blue).</li>
+                    <li>Click <strong>Save Profile</strong> to set the signature.</li>
+                </ul>
+
+                <!-- Profile Customizer Live Sandbox Demo -->
+                <div class="interactive-container">
+                    <div class="interactive-header">
+                        <span style="font-weight: 600; font-size: 0.9rem;">Live Sandbox: Profile Configuration & Preview</span>
+                        <span class="interactive-tag">Widget</span>
+                    </div>
+                    <div class="interactive-body">
+                        <p style="font-size: 0.85rem; margin-bottom: 1rem;">Pick your name and color in the widgets below, then observe how your changes look instantly on the mock script page.</p>
+                        
+                        <div class="profile-picker">
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">Author Name</label>
+                                <input type="text" id="demo-author-name" value="Jane Doe">
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">Revision Color</label>
+                                <div class="color-well-container">
+                                    <input type="color" class="color-well" id="demo-author-color" value="#6366f1">
+                                    <span id="demo-color-hex" style="font-size: 0.8rem; font-family: monospace;">#6366f1</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="script-canvas">
+                            <div class="script-line" style="text-align: center; margin-bottom: 1.5rem; text-transform: uppercase;">
+                                EXT. STREETS - NIGHT
+                            </div>
+                            <div class="script-line" style="margin-left: 20%; width: 60%; text-transform: uppercase; margin-bottom: 0.25rem;">
+                                HELENA
+                            </div>
+                            <div class="script-line" style="margin-left: 10%; width: 80%; text-indent: 0; line-height: 1.4;">
+                                <span class="revision-asterisk" id="demo-asterisk" style="color: #6366f1;">*</span>
+                                <span class="revision-tooltip" id="demo-tooltip">Jane Doe - 06/02/2026</span>
+                                We need to cross the river. Now.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Collaboration -->
+            <section id="collaboration" class="searchable">
+                <h2><span>🤝</span> 2. Collaboration & Revisions</h2>
+                <p>Working in teams on a single script can often lead to accidental edits or missing context. ReelScript solves this through a dedicated Revision Tracking engine that visualizes modifications inline.</p>
+                
+                <div class="callout info">
+                    <div class="callout-title">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Did You Know?
+                    </div>
+                    <p style="margin-bottom: 0;">ReelScript project files are consolidated into compressed <mark>.rsp</mark> bundles containing metadata, scripts, snapshots, and revision histories inside a single structured file.</p>
+                </div>
+
+                <div class="feature-grid">
+                    <div class="card">
+                        <div class="card-icon">⏱️</div>
+                        <h3 class="card-title">Real-time Marking</h3>
+                        <p class="card-body">Any edits made while revision tracking is active will place a colored asterisk (*) on the left margin, signaling changes immediately.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">💬</div>
+                        <h3 class="card-title">Revision Notes</h3>
+                        <p class="card-body">Right-click any revision asterisk to attach contextual notes. This opens the Revision Document and keeps comments synced.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">✅</div>
+                        <h3 class="card-title">Approve & Merge</h3>
+                        <p class="card-body">Review team edits inline. Right-clicking an asterisk allows you to Accept and Merge edits to remove marks and make changes permanent.</p>
+                    </div>
+                </div>
+
+                <div class="image-container">
+                    <img src="collaboration.png" alt="Collaborative screenwriting graphic showing editing pipelines">
+                    <div class="image-caption">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        Figure 2.1: Revision and collaboration workflow matching edits with distinct author tokens.
+                    </div>
+                </div>
+
+                <h3>Sharing Edits Safely</h3>
+                <p>ReelScript includes direct shortcuts to synchronize and exchange scripts across distributed storage vaults:</p>
+                <ol style="margin-left: 2rem; margin-bottom: 1.5rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 8px;">
+                    <li>Save your ongoing project draft: Navigate to <strong>File</strong> &rarr; <strong>Save Project</strong> (<kbd>Ctrl</kbd>+<kbd>S</kbd>).</li>
+                    <li>Click <strong>Share</strong> &rarr; <strong>Open Shared Google Folder</strong> from the menu toolbar.</li>
+                    <li>The system opens your configured Google Drive or cloud sync folder directly in your browser.</li>
+                    <li>Drop the updated <mark>.rsp</mark> file in the target directory to sync your edits with co-writers.</li>
+                </ol>
+            </section>
+
+            <!-- 3. Writing and Formatting -->
+            <section id="interface" class="searchable">
+                <h2><span>🎬</span> 3. The Interface & Writing Flow</h2>
+                <p>Writing in screenplay format is highly structured. ReelScript optimizes this formatting step by automating layout shifts based on native screenplay logic.</p>
+
+                <h3>1. Navigation Sidebar</h3>
+                <p>The workspace sidebar features three primary utility tabs:</p>
+                <ul class="custom-list">
+                    <li><strong>📋 Script Navigation:</strong> Navigate through documents like your Title Page, Screenplay Draft, and Revision Notes. Right-click any document to Move Up, Move Down, Rename, or Delete.</li>
+                    <li><strong>🎬 Scenes Explorer:</strong> A live directory listing scene headings. Clicking elements scrolls you to that point instantly.</li>
+                    <li><strong>💬 Private Notes:</strong> Local-only scratchpad. Any thoughts entered here will stay on your local disk and will not sync inside the shared project file.</li>
+                    <li><strong>💾 Save:</strong> Quick access button to instantly save your project.</li>
+                    <li><strong>📌 Stay On Top:</strong> Toggles the window to float above all other applications. The pin icon turns red when active.</li>
+                </ul>
+
+                <h3>2. Smart Formatting Flow</h3>
+                <p>Write content without manual formatting buttons. The editor automatically adjusts margins and letter casings based on keyboard inputs:</p>
+                <ul class="custom-list">
+                    <li>Type a <strong>Scene Heading</strong> & press <kbd>Enter</kbd> &rarr; Switch to <strong>Action</strong>.</li>
+                    <li>In <strong>Action</strong>, press <kbd>Tab</kbd> &rarr; Switch to <strong>Character</strong> name.</li>
+                    <li>Type a <strong>Character</strong> & press <kbd>Enter</kbd> &rarr; Switch to <strong>Dialogue</strong> box.</li>
+                    <li>In <strong>Dialogue</strong>, press <kbd>Enter</kbd> &rarr; Switch back to <strong>Character</strong> block.</li>
+                    <li>Pressing <kbd>Enter</kbd> on a blank Action line automatically converts it to a Character element.</li>
+                </ul>
+
+                <!-- Interactive Formatting Simulator -->
+                <div class="interactive-container">
+                    <div class="interactive-header">
+                        <span style="font-weight: 600; font-size: 0.9rem;">Live Sandbox: Smart Script Formatting Simulator</span>
+                        <span class="interactive-tag">Simulator</span>
+                    </div>
+                    <div class="interactive-body">
+                        <div class="sim-meta">
+                            <span>Press <kbd>Tab</kbd> to cycle elements, or <kbd>Enter</kbd> to jump to the next line style.</span>
+                            <span class="sim-element-badge" id="sim-type-badge">SCENE HEADING</span>
+                        </div>
+                        
+                        <div class="editor-simulator">
+                            <div class="editor-input-area" id="sim-editor-area" contenteditable="true" spellcheck="false">
+                                <div class="editor-line scene-heading">INT. WRITER STATION - NIGHT</div>
+                                <div class="editor-line action">A glowing neon monitor displays a single blinking cursor.</div>
+                                <div class="editor-line character">WRITER</div>
+                                <div class="editor-line dialogue">This simulator behaves exactly like the desktop app.</div>
+                                <div class="editor-line parenthetical">(excitedly)</div>
+                                <div class="editor-line dialogue">Try typing here and press Enter or Tab!</div>
+                            </div>
+                        </div>
+                        <div class="sim-actions">
+                            <button class="sim-btn secondary" onclick="changeSimLineType('scene-heading')">Scene Heading</button>
+                            <button class="sim-btn secondary" onclick="changeSimLineType('action')">Action</button>
+                            <button class="sim-btn secondary" onclick="changeSimLineType('character')">Character</button>
+                            <button class="sim-btn secondary" onclick="changeSimLineType('dialogue')">Dialogue</button>
+                            <button class="sim-btn" onclick="resetSimEditor()">Reset Sandbox</button>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Keyboard Hotkey Layouts</h3>
+                <p>Prefer direct triggers? Use standard shortcuts to snap elements instantly to the correct layout margins:</p>
+                
+                <table class="shortcut-table">
+                    <thead>
+                        <tr>
+                            <th>Formatting Element</th>
+                            <th>Keyboard Shortcut</th>
+                            <th>Alignment Margin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Scene Heading</strong></td>
+                            <td><kbd>Ctrl</kbd> + <kbd>1</kbd></td>
+                            <td>Left (All Caps)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Action</strong></td>
+                            <td><kbd>Ctrl</kbd> + <kbd>2</kbd></td>
+                            <td>Left</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Character</strong></td>
+                            <td><kbd>Ctrl</kbd> + <kbd>3</kbd></td>
+                            <td>Center-aligned (All Caps)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Parenthetical</strong></td>
+                            <td><kbd>Ctrl</kbd> + <kbd>4</kbd></td>
+                            <td>Indented Center</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dialogue</strong></td>
+                            <td><kbd>Ctrl</kbd> + <kbd>5</kbd></td>
+                            <td>Indented Left</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Transition</strong></td>
+                            <td><kbd>Ctrl</kbd> + <kbd>6</kbd></td>
+                            <td>Right Align (All Caps)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Shot Type</strong></td>
+                            <td><kbd>Ctrl</kbd> + <kbd>7</kbd></td>
+                            <td>Left (All Caps)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Page Break</strong></td>
+                            <td><kbd>Ctrl</kbd> + <kbd>Enter</kbd></td>
+                            <td>Page break trigger</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- 4. AI Assistant -->
+            <section id="ai-assistant" class="searchable">
+                <h2><span>🤖</span> 4. Google Gemini AI integration</h2>
+                <p>ReelScript connects directly to Google's Gemini models. The AI reviews contextual inputs, evaluates character arcs, fixes styling issues, and streamlines drafts with click-to-nav reports.</p>
+
+                <div class="image-container">
+                    <img src="ai_assistant.png" alt="Futuristic AI writing assistant representation graphic">
+                    <div class="image-caption">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        Figure 4.1: Neural-assisted analysis pipeline for structural pacing and scene evaluations.
+                    </div>
+                </div>
+
+                <div class="feature-grid">
+                    <div class="card">
+                        <div class="card-icon">💡</div>
+                        <h3 class="card-title">Creative suggestions</h3>
+                        <p class="card-body">Highlight any paragraph or line of dialogue, then click <strong>💡 Suggest</strong> in the main toolbar. A draggable window offers three contextual rewrites instantly.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">✨</div>
+                        <h3 class="card-title">AI Auto-Fix</h3>
+                        <p class="card-body">Select clunky lines, right-click, and run <strong>✨ AI Auto-Fix Selection</strong>. The engine corrects styling errors and smooths syntax inline.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">🎬</div>
+                        <h3 class="card-title">Scene diagnostics</h3>
+                        <p class="card-body">Right-click a scene in the Scene Sidebar to run <strong>AI Check Scene</strong>. Receives targeted reports about dialogue flow, pacing speed, and script style.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">🤖</div>
+                        <h3 class="card-title">Full Script Report</h3>
+                        <p class="card-body">Navigate to <strong>Reports</strong> &rarr; <strong>AI Script Analysis</strong>. Generates dynamic reports with clickable lines that jump your cursor directly to the line in question.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Backups -->
+            <section id="backups" class="searchable">
+                <h2><span>💽</span> 5. Backups & Auto-Save (Never lose work)</h2>
+                <p>A screenwriter's worst nightmare is losing drafts. ReelScript mitigates this by maintaining a redundant, multi-tier backup system.</p>
+
+                <div class="image-container">
+                    <img src="backups_sync.png" alt="Cloud backup and local directory sync illustration graphic">
+                    <div class="image-caption">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        Figure 5.1: Multi-tiered file synchronization and automatic backup architecture.
+                    </div>
+                </div>
+
+                <h3>Backup Customization</h3>
+                <p>Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> (or select <strong>File</strong> &rarr; <strong>Manage Backups & Auto-Save</strong>) to modify directory and storage configs:</p>
+                
+                <ol style="margin-left: 2rem; margin-bottom: 1.5rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 10px;">
+                    <li><strong>Save Interval:</strong> Adjust background backup timings (default: 5 minutes). Additionally, ReelScript initiates an instantaneous local autosave whenever typing pauses for 1 second.</li>
+                    <li><strong>Local Directory:</strong> By default, files are routed to your local machine path: <mark>Documents/ReelScript</mark>.</li>
+                    <li><strong>Secondary Cloud Mirror:</strong> Route duplicate backup files to synced Google Drive, OneDrive, or Dropbox folders for redundancy.</li>
+                    <li><strong>Backup Retention Limits:</strong> To save disk space, directories are limited to 5 backups. The 6th file triggers the removal of the oldest copy.</li>
+                </ol>
+
+                <div class="callout warning">
+                    <div class="callout-title">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        Manual Snapshots
+                    </div>
+                    <p style="margin-bottom: 0;">Before performing major section rewrites, click <strong>Revisions</strong> &rarr; <strong>Manage Snapshots</strong> to create a permanent snapshot state. This locks in your current draft so you can roll back to it if a rewrite goes off the rails.</p>
+                </div>
+            </section>
+
+            <!-- 6. Useful Features -->
+            <section id="tools" class="searchable">
+                <h2><span>🛠️</span> 6. Useful Tools & Features</h2>
+                <p>ReelScript includes workflow accelerators to clean up scripts, review character dialogue, and export files to other production systems.</p>
+
+                <div class="feature-grid">
+                    <div class="card">
+                        <div class="card-icon">👥</div>
+                        <h3 class="card-title">Character Filter</h3>
+                        <p class="card-body">Select <strong>Tools</strong> &rarr; <strong>Character Filter</strong> to isolate dialog boxes for a single role. Perfect for assessing character tone and flow.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">✏️</div>
+                        <h3 class="card-title">Global Rename</h3>
+                        <p class="card-body">Select <strong>Tools</strong> &rarr; <strong>Rename Character</strong> to modify a character name across both dialogue lines and action scene details.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">🔍</div>
+                        <h3 class="card-title">Find & Replace</h3>
+                        <p class="card-body">Press <kbd>Ctrl</kbd> + <kbd>F</kbd> to launch search panels. Match exact uppercase characters or replace instances globally.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">📖</div>
+                        <h3 class="card-title">Spellcheck & Dict</h3>
+                        <p class="card-body">Select <strong>Tools</strong> &rarr; <strong>Check Spelling</strong>. Ignores screenwriting shorthand like EXT. and INT., and lets you add custom terms to the dictionary.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">🕶️</div>
+                        <h3 class="card-title">Focus & Dark Mode</h3>
+                        <p class="card-body">Press <kbd>F11</kbd> to toggle Focus Mode, hiding toolbars. Toggle <strong>Customize</strong> &rarr; <strong>Dark Mode</strong> to switch themes and ease eye strain.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">📤</div>
+                        <h3 class="card-title">Industry Exports</h3>
+                        <p class="card-body">Export draft pages to standard formats like <mark>PDF</mark> or native <mark>.fdx</mark> (Final Draft) format, ensuring seamless sharing with producers.</p>
+                    </div>
+                </div>
+            </section>
+
+            <footer style="margin-top: 5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <span style="font-size: 0.85rem; color: var(--text-muted);">© 2026 ReelScript Software. All Rights Reserved.</span>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Happy Writing! 🎬</span>
+            </footer>
+
+        </main>
+    </div>
+
+    <!-- Floating Back to Top Button -->
+    <button class="back-to-top" id="back-to-top" aria-label="Scroll back to top">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5"></path>
+        </svg>
+    </button>
+
+    <!-- JavaScript Interactive Code -->
+    <script>
+        // Dark/Light Theme Handler
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        
+        // Initial setup
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcons(savedTheme);
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcons(newTheme);
+        });
+
+        function updateThemeIcons(theme) {
+            if (theme === 'dark') {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            } else {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            }
+        }
+
+        // Mobile sidebar navigation toggler
+        const mobileToggle = document.getElementById('mobile-toggle');
+        const appSidebar = document.getElementById('app-sidebar');
+
+        mobileToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            appSidebar.classList.toggle('open');
+            mobileToggle.textContent = appSidebar.classList.contains('open') ? '✕' : '☰';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 1024 && appSidebar.classList.contains('open') && !appSidebar.contains(e.target) && e.target !== mobileToggle) {
+                appSidebar.classList.remove('open');
+                mobileToggle.textContent = '☰';
+            }
+        });
+
+        // Search Engine Live Filter
+        const searchInput = document.getElementById('search-input');
+        const searchables = document.querySelectorAll('.searchable');
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            
+            searchables.forEach(section => {
+                const text = section.innerText.toLowerCase();
+                const headers = section.querySelectorAll('h2, h3, h4');
+                let matchesHeader = false;
+                
+                headers.forEach(header => {
+                    if (header.innerText.toLowerCase().includes(query)) {
+                        matchesHeader = true;
+                    }
+                });
+
+                if (text.includes(query) || matchesHeader || query === '') {
+                    section.style.display = 'block';
+                    // Re-highlight or restore
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+
+            // Handle sidebar active markers state
+            if (query !== '') {
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    const targetId = link.getAttribute('href').substring(1);
+                    const targetSection = document.getElementById(targetId);
+                    if (targetSection && targetSection.style.display === 'none') {
+                        link.style.display = 'none';
+                    } else {
+                        link.style.display = 'flex';
+                    }
+                });
+            } else {
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.style.display = 'flex';
+                });
+            }
+        });
+
+        // Interactive profile settings demo logic
+        const demoAuthorName = document.getElementById('demo-author-name');
+        const demoAuthorColor = document.getElementById('demo-author-color');
+        const demoColorHex = document.getElementById('demo-color-hex');
+        const demoAsterisk = document.getElementById('demo-asterisk');
+        const demoTooltip = document.getElementById('demo-tooltip');
+
+        function updateProfilePreview() {
+            const name = demoAuthorName.value || 'Anonymous';
+            const color = demoAuthorColor.value;
+            demoColorHex.textContent = color.toUpperCase();
+            demoAsterisk.style.color = color;
+            
+            // Format current date
+            const now = new Date();
+            const dateStr = `${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}/${now.getFullYear()}`;
+            demoTooltip.textContent = `${name} - ${dateStr}`;
+        }
+
+        demoAuthorName.addEventListener('input', updateProfilePreview);
+        demoAuthorColor.addEventListener('input', updateProfilePreview);
+
+        // Smart editor simulator logics
+        const simEditorArea = document.getElementById('sim-editor-area');
+        const simTypeBadge = document.getElementById('sim-type-badge');
+
+        const editorFlow = ['scene-heading', 'action', 'character', 'dialogue', 'parenthetical'];
+        let currentSimType = 'dialogue';
+
+        function updateSimBadge(type) {
+            currentSimType = type;
+            simTypeBadge.textContent = type.replace('-', ' ').toUpperCase();
+            
+            // Assign active badge theme colors
+            if (type === 'scene-heading') {
+                simTypeBadge.style.backgroundColor = 'rgba(99,102,241,0.15)';
+                simTypeBadge.style.color = 'var(--accent)';
+            } else if (type === 'character') {
+                simTypeBadge.style.backgroundColor = 'rgba(16,185,129,0.15)';
+                simTypeBadge.style.color = 'var(--success)';
+            } else if (type === 'dialogue') {
+                simTypeBadge.style.backgroundColor = 'rgba(245,158,11,0.15)';
+                simTypeBadge.style.color = 'var(--warning)';
+            } else {
+                simTypeBadge.style.backgroundColor = 'var(--bg-tertiary)';
+                simTypeBadge.style.color = 'var(--text-secondary)';
+            }
+        }
+
+        function changeSimLineType(type) {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            
+            let targetLine = selection.anchorNode;
+            while (targetLine && targetLine !== simEditorArea && targetLine.parentNode !== simEditorArea) {
+                targetLine = targetLine.parentNode;
+            }
+            
+            if (targetLine && targetLine !== simEditorArea) {
+                // Clear existing element styles
+                targetLine.className = 'editor-line ' + type;
+                updateSimBadge(type);
+            }
+        }
+
+        function resetSimEditor() {
+            simEditorArea.innerHTML = `
+                <div class="editor-line scene-heading">INT. WRITER STATION - DAY</div>
+                <div class="editor-line action">A glowing neon monitor displays a single blinking cursor.</div>
+                <div class="editor-line character">WRITER</div>
+                <div class="editor-line dialogue">This simulator behaves exactly like the desktop app.</div>
+                <div class="editor-line parenthetical">(excitedly)</div>
+                <div class="editor-line dialogue">Try typing here and press Enter or Tab!</div>
+            `;
+            updateSimBadge('dialogue');
+        }
+
+        // Custom keyboard handlers matching the ReelScript screenplay editor
+        simEditorArea.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                
+                // Get active editing node element line
+                const selection = window.getSelection();
+                let targetLine = selection.anchorNode;
+                while (targetLine && targetLine.parentNode !== simEditorArea) {
+                    targetLine = targetLine.parentNode;
+                }
+                
+                if (targetLine) {
+                    let nextType = 'character';
+                    if (targetLine.classList.contains('action')) {
+                        nextType = 'character';
+                    } else if (targetLine.classList.contains('scene-heading')) {
+                        nextType = 'action';
+                    } else if (targetLine.classList.contains('character')) {
+                        nextType = 'parenthetical';
+                    } else if (targetLine.classList.contains('parenthetical')) {
+                        nextType = 'dialogue';
+                    } else {
+                        nextType = 'scene-heading';
+                    }
+                    
+                    targetLine.className = 'editor-line ' + nextType;
+                    updateSimBadge(nextType);
+                }
+            } else if (e.key === 'Enter') {
+                // Determine layout transitions on Enter
+                const selection = window.getSelection();
+                let targetLine = selection.anchorNode;
+                while (targetLine && targetLine.parentNode !== simEditorArea) {
+                    targetLine = targetLine.parentNode;
+                }
+
+                if (targetLine) {
+                    let currentClass = 'action';
+                    editorFlow.forEach(cls => {
+                        if (targetLine.classList.contains(cls)) {
+                            currentClass = cls;
+                        }
+                    });
+
+                    let nextClass = 'action';
+                    if (currentClass === 'scene-heading') {
+                        nextClass = 'action';
+                    } else if (currentClass === 'action') {
+                        // Enter on blank line leads to Character
+                        if (targetLine.textContent.trim() === '') {
+                            nextClass = 'character';
+                            targetLine.className = 'editor-line character';
+                            updateSimBadge('character');
+                            e.preventDefault();
+                            return;
+                        }
+                        nextClass = 'action';
+                    } else if (currentClass === 'character') {
+                        nextClass = 'dialogue';
+                    } else if (currentClass === 'dialogue') {
+                        // Double enter/blank dialogue line returns to character/action
+                        if (targetLine.textContent.trim() === '') {
+                            nextClass = 'action';
+                            targetLine.className = 'editor-line action';
+                            updateSimBadge('action');
+                            e.preventDefault();
+                            return;
+                        }
+                        nextClass = 'character';
+                    } else if (currentClass === 'parenthetical') {
+                        nextClass = 'dialogue';
+                    }
+
+                    // Create new element node line inline
+                    setTimeout(() => {
+                        const newSelection = window.getSelection();
+                        let newLine = newSelection.anchorNode;
+                        while (newLine && newLine.parentNode !== simEditorArea) {
+                            newLine = newLine.parentNode;
+                        }
+                        if (newLine && newLine !== targetLine) {
+                            newLine.className = 'editor-line ' + nextClass;
+                            updateSimBadge(nextClass);
+                        }
+                    }, 5);
+                }
+            }
+        });
+
+        // Click handler to update element badges when cursor shifts
+        simEditorArea.addEventListener('click', () => {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            let targetLine = selection.anchorNode;
+            while (targetLine && targetLine.parentNode !== simEditorArea) {
+                targetLine = targetLine.parentNode;
+            }
+            if (targetLine && targetLine !== simEditorArea) {
+                editorFlow.forEach(cls => {
+                    if (targetLine.classList.contains(cls)) {
+                        updateSimBadge(cls);
+                    }
+                });
+            }
+        });
+
+        // Scrollspy for sidebar active links
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('section');
+
+        window.addEventListener('scroll', () => {
+            let current = 'welcome';
+            const offset = 120; // account for headers/padding
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - offset;
+                if (window.scrollY >= sectionTop) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Floating Back-to-Top visibility
+        const backToTopBtn = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        });
+
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+    </script>
+</body>
+</html>

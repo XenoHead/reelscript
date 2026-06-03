@@ -98,6 +98,14 @@ function getCurrentParagraph() {
     return node && node.tagName === 'P' ? node : null;
 }
 
+// Centralized character name extraction to prevent duplicates caused by trailing spaces or unclosed parentheses
+function getCharacterBaseName(text) {
+    if (!text) return '';
+    let cleanText = text.replace(/[\u00A0\u200B]/g, ' ');
+    cleanText = cleanText.replace(/\s*\(.*$/, '');
+    return cleanText.trim().toUpperCase();
+}
+
 function getLineType(p) {
     if (!p) return 'action';
     const types = ['scene-heading', 'action', 'character', 'parenthetical', 'dialogue', 'transition', 'shot', 'dual', 'page-break', 'text', 'note'];
@@ -271,7 +279,7 @@ function getCharNameTable() {
     _charNameCache = new Set();
     editor.querySelectorAll('p.character').forEach(p => {
         // Strip extensions like (V.O.), (CONT'D), etc. to get the base name
-        const raw = p.textContent.replace(/\u200B/g, '').replace(/\(.*?\)/g, '').trim();
+        const raw = getCharacterBaseName(p.textContent);
         if (raw.length > 1) _charNameCache.add(raw.toUpperCase());
     });
     _charNameCacheDirty = false;
@@ -400,13 +408,13 @@ let appSettings = {
     darkMode: false,
     snapshots: [],
     projectDocuments: {
-        'Default Document': '',
+        'Main Script': '',
         'Revision Notes': '',
         'Title Page': ''
     },
     hotkeys: { ...defaultHotkeys }
 };
-let currentDocument = 'Default Document';
+let currentDocument = 'Main Script';
 
 // Setup Support for Multiple Menu Dropdowns
 document.querySelectorAll('.dropdown').forEach(menu => {
@@ -427,111 +435,273 @@ if (mindMapBtn) {
             alert("Mind Map requires the native app wrapper.");
             return;
         }
-        
-        // Extract scenes and characters to pass to the mind map
-        const data = {
-            scenes: [],
-            characters: []
-        };
-        appSettings.mindmapNotes = appSettings.mindmapNotes || {};
-        appSettings.characterNotes = appSettings.characterNotes || {};
-        
-        const pars = Array.from(document.querySelectorAll('#editor p'));
-        let currentScene = null;
-        let sceneCounter = 0;
-        
-        // Pass 1: Collect scenes and characters
-        const charStats = {};
-        
-        pars.forEach(p => {
-            let text = p.textContent.replace(/\u200B/g, '').trim();
-            const lineType = getLineType(p);
-            if (['scene-heading', 'character', 'transition', 'shot'].includes(lineType)) {
-                text = text.toUpperCase();
-            }
-            if (!text) return;
-            
-            if (p.classList.contains('scene-heading')) {
-                sceneCounter++;
-                let location = text;
-                let time = '';
-                const parts = text.split(/\s*[-—–]\s*/);
-                if (parts.length > 1) {
-                    time = parts.pop().trim();
-                    location = parts.join(' - ').trim();
-                }
 
-                currentScene = { 
-                    id: sceneCounter, 
-                    name: text, 
-                    location: location,
-                    time: time,
-                    characters: [],
-                    notes: appSettings.mindmapNotes[sceneCounter] || '',
-                    synopsis: '',
-                    blockCount: 0,
-                    actionCount: 0,
-                    dialogueCount: 0,
-                    shotCount: 0,
-                    transitionCount: 0
-                };
-                data.scenes.push(currentScene);
-            } else if (currentScene) {
-                currentScene.blockCount++;
-                if (p.classList.contains('action')) {
-                    currentScene.actionCount++;
-                    if (!currentScene.synopsis && text.length > 10) {
-                        currentScene.synopsis = text;
-                    }
-                } else if (p.classList.contains('dialogue')) {
-                    currentScene.dialogueCount++;
-                } else if (p.classList.contains('shot')) {
-                    currentScene.shotCount++;
-                } else if (p.classList.contains('transition')) {
-                    currentScene.transitionCount++;
-                } else if (p.classList.contains('character')) {
-                    const charName = text.replace(/\(.*?\)/g, '').trim();
-                    if (charName) {
-                        if (!currentScene.characters.includes(charName)) {
-                            currentScene.characters.push(charName);
-                        }
-                        if (!charStats[charName]) {
-                            charStats[charName] = { scenes: new Set(), dialogueCount: 0, intro: '' };
-                        }
-                        charStats[charName].scenes.add(sceneCounter);
-                        charStats[charName].dialogueCount++;
-                    }
-                }
+        let data;
+        if (appSettings.projectDocuments['MindMapData']) {
+            try {
+                data = JSON.parse(appSettings.projectDocuments['MindMapData']);
+                if (!data.groups) data.groups = { scenes: [], characters: [] };
+            } catch (e) {
+                data = window.generateMindmapData();
+                appSettings.projectDocuments['MindMapData'] = JSON.stringify(data);
+                saveSettings();
             }
-        });
+        } else {
+            data = window.generateMindmapData();
+            appSettings.projectDocuments['MindMapData'] = JSON.stringify(data);
+            saveSettings();
+        }
 
-        // Pass 2: Find character introductions in action lines
-        const charNames = Object.keys(charStats);
-        pars.forEach(p => {
-            if (p.classList.contains('action')) {
-                const text = p.textContent.replace(/\u200B/g, '').trim();
-                charNames.forEach(name => {
-                    // Check if name is fully capitalized in this action block
-                    const regex = new RegExp(`\\b${name}\\b(?:\\s*\\(.*?\\))?`, 'g');
-                    if (!charStats[name].intro && text.match(regex) && text.includes(name.toUpperCase())) {
-                        charStats[name].intro = text; // First mention in action is usually the intro
-                    }
-                });
-            }
-        });
-
-        data.characters = charNames.map(name => ({
-            name: name,
-            scenes: Array.from(charStats[name].scenes),
-            dialogueCount: charStats[name].dialogueCount,
-            intro: charStats[name].intro,
-            notes: appSettings.characterNotes[name] || ''
-        }));
-        
         await window.pywebview.api.set_mindmap_data(data);
         await window.pywebview.api.open_mindmap_window();
     });
 }
+
+window.generateMindmapData = function () {
+    const data = { scenes: [], characters: [], groups: { scenes: [], characters: [] } };
+    appSettings.mindmapNotes = appSettings.mindmapNotes || {};
+    appSettings.characterNotes = appSettings.characterNotes || {};
+
+    const pars = Array.from(document.querySelectorAll('#editor p'));
+    let currentScene = null;
+    let sceneCounter = 0;
+    const charStats = {};
+
+    pars.forEach(p => {
+        let text = p.textContent.replace(/\u200B/g, '').trim();
+        const lineType = getLineType(p);
+        if (['scene-heading', 'character', 'transition', 'shot'].includes(lineType)) {
+            text = text.toUpperCase();
+        }
+        if (!text) return;
+
+        if (p.classList.contains('scene-heading')) {
+            sceneCounter++;
+            let location = text;
+            let time = '';
+            const parts = text.split(/\s*[-—–]\s*/);
+            if (parts.length > 1) {
+                time = parts.pop().trim();
+                location = parts.join(' - ').trim();
+            }
+
+            currentScene = {
+                id: sceneCounter,
+                name: text,
+                location: location,
+                time: time,
+                characters: [],
+                notes: appSettings.mindmapNotes[sceneCounter] || '',
+                synopsis: '',
+                blockCount: 0,
+                actionCount: 0,
+                dialogueCount: 0,
+                shotCount: 0,
+                transitionCount: 0
+            };
+            data.scenes.push(currentScene);
+        } else if (currentScene) {
+            currentScene.blockCount++;
+            if (p.classList.contains('action')) {
+                currentScene.actionCount++;
+                if (!currentScene.synopsis && text.length > 10) {
+                    currentScene.synopsis = text;
+                }
+            } else if (p.classList.contains('dialogue')) {
+                currentScene.dialogueCount++;
+            } else if (p.classList.contains('shot')) {
+                currentScene.shotCount++;
+            } else if (p.classList.contains('transition')) {
+                currentScene.transitionCount++;
+            } else if (p.classList.contains('character')) {
+                const charName = getCharacterBaseName(text);
+                if (charName) {
+                    if (!currentScene.characters.includes(charName)) {
+                        currentScene.characters.push(charName);
+                    }
+                    if (!charStats[charName]) {
+                        charStats[charName] = { scenes: new Set(), dialogueCount: 0, intro: '' };
+                    }
+                    charStats[charName].scenes.add(sceneCounter);
+                    charStats[charName].dialogueCount++;
+                }
+            }
+        }
+    });
+
+    const charNames = Object.keys(charStats);
+    pars.forEach(p => {
+        if (p.classList.contains('action')) {
+            const text = p.textContent.replace(/\u200B/g, '').trim();
+            charNames.forEach(name => {
+                const regex = new RegExp(`\\b${name}\\b(?:\\s*\\(.*?\\))?`, 'g');
+                if (!charStats[name].intro && text.match(regex) && text.includes(name.toUpperCase())) {
+                    charStats[name].intro = text;
+                }
+            });
+        }
+    });
+
+    data.characters = charNames.map(name => ({
+        name: name,
+        scenes: Array.from(charStats[name].scenes),
+        dialogueCount: charStats[name].dialogueCount,
+        intro: charStats[name].intro,
+        notes: appSettings.characterNotes[name] || ''
+    }));
+
+    return data;
+};
+
+window.rescanMindmapCard = function (syncType, syncId) {
+    if (!appSettings.projectDocuments['MindMapData']) return;
+
+    let savedData;
+    try {
+        savedData = JSON.parse(appSettings.projectDocuments['MindMapData']);
+    } catch (e) { return; }
+
+    const newData = window.generateMindmapData();
+
+    if (syncType === 'scene') {
+        const newScene = newData.scenes.find(s => s.id == syncId);
+        if (newScene) {
+            const oldIdx = savedData.scenes.findIndex(s => s.id == syncId);
+            if (oldIdx !== -1) {
+                newScene.notes = savedData.scenes[oldIdx].notes;
+                savedData.scenes[oldIdx] = newScene;
+            } else {
+                savedData.scenes.push(newScene);
+            }
+        }
+    } else if (syncType === 'character') {
+        const newChar = newData.characters.find(c => c.name === syncId);
+        if (newChar) {
+            const oldIdx = savedData.characters.findIndex(c => c.name === syncId);
+            if (oldIdx !== -1) {
+                newChar.notes = savedData.characters[oldIdx].notes;
+                savedData.characters[oldIdx] = newChar;
+            } else {
+                savedData.characters.push(newChar);
+            }
+        }
+    }
+
+    appSettings.projectDocuments['MindMapData'] = JSON.stringify(savedData);
+    saveSettings();
+    if (window.pywebview) {
+        window.pywebview.api.set_mindmap_data(savedData).then(() => {
+            window.pywebview.api.notify_mindmap_updated();
+        });
+    }
+};
+
+window.updateMindmapNote = function (scene_id, note_content) {
+    if (appSettings.projectDocuments['MindMapData']) {
+        try {
+            let data = JSON.parse(appSettings.projectDocuments['MindMapData']);
+            let s = data.scenes.find(x => x.id == scene_id);
+            if (s) { s.notes = note_content; }
+            appSettings.projectDocuments['MindMapData'] = JSON.stringify(data);
+            saveSettings();
+        } catch (e) { }
+    }
+};
+
+window.updateCharacterNote = function (char_name, note_content) {
+    if (appSettings.projectDocuments['MindMapData']) {
+        try {
+            let data = JSON.parse(appSettings.projectDocuments['MindMapData']);
+            let c = data.characters.find(x => x.name == char_name);
+            if (c) { c.notes = note_content; }
+            appSettings.projectDocuments['MindMapData'] = JSON.stringify(data);
+            saveSettings();
+        } catch (e) { }
+    }
+};
+
+window.updateMindmapCardContent = function (syncType, syncId, titleText, bodyHtml) {
+    if (appSettings.projectDocuments['MindMapData']) {
+        try {
+            let data = JSON.parse(appSettings.projectDocuments['MindMapData']);
+            if (syncType === 'scene') {
+                let s = data.scenes.find(x => x.id == syncId);
+                if (s) { s.customTitle = titleText; s.customBody = bodyHtml; }
+            } else if (syncType === 'character') {
+                let c = data.characters.find(x => x.name == syncId);
+                if (c) { c.customTitle = titleText; c.customBody = bodyHtml; }
+            }
+            appSettings.projectDocuments['MindMapData'] = JSON.stringify(data);
+            saveSettings();
+        } catch (e) { }
+    }
+};
+
+window.createMindmapGroup = function (groupType, groupName) {
+    if (appSettings.projectDocuments['MindMapData']) {
+        try {
+            let data = JSON.parse(appSettings.projectDocuments['MindMapData']);
+            if (!data.groups) data.groups = { scenes: [], characters: [] };
+
+            const newId = 'grp_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+
+            if (groupType === 'scene') {
+                data.groups.scenes.push({ id: newId, name: groupName, collapsed: false });
+            } else if (groupType === 'character') {
+                data.groups.characters.push({ id: newId, name: groupName, collapsed: false });
+            }
+
+            appSettings.projectDocuments['MindMapData'] = JSON.stringify(data);
+            saveSettings();
+
+            if (window.pywebview) {
+                window.pywebview.api.set_mindmap_data(data).then(() => {
+                    window.pywebview.api.notify_mindmap_updated();
+                });
+            }
+        } catch (e) { }
+    }
+};
+
+window.assignCardToGroup = function (syncType, syncId, groupId) {
+    if (appSettings.projectDocuments['MindMapData']) {
+        try {
+            let data = JSON.parse(appSettings.projectDocuments['MindMapData']);
+
+            if (syncType === 'scene') {
+                let s = data.scenes.find(x => x.id == syncId);
+                if (s) s.groupId = groupId;
+            } else if (syncType === 'character') {
+                let c = data.characters.find(x => x.name == syncId);
+                if (c) c.groupId = groupId;
+            }
+
+            appSettings.projectDocuments['MindMapData'] = JSON.stringify(data);
+            saveSettings();
+
+            if (window.pywebview) {
+                window.pywebview.api.set_mindmap_data(data).then(() => {
+                    window.pywebview.api.notify_mindmap_updated();
+                });
+            }
+        } catch (e) { }
+    }
+};
+
+window.toggleGroupCollapse = function (groupType, groupId, isCollapsed) {
+    if (appSettings.projectDocuments['MindMapData']) {
+        try {
+            let data = JSON.parse(appSettings.projectDocuments['MindMapData']);
+            if (data.groups) {
+                let list = groupType === 'scene' ? data.groups.scenes : data.groups.characters;
+                let g = list.find(x => x.id === groupId);
+                if (g) g.collapsed = isCollapsed;
+                appSettings.projectDocuments['MindMapData'] = JSON.stringify(data);
+                saveSettings();
+            }
+        } catch (e) { }
+    }
+};
 
 function updateHotkeyDisplay() {
     document.querySelectorAll('[data-hotkey-display]').forEach(el => {
@@ -579,6 +749,10 @@ window.addEventListener('pywebviewready', async () => {
             appSettings.projectDocuments['Revision Notes'] = appSettings.projectDocuments['Private Pad'];
             delete appSettings.projectDocuments['Private Pad'];
         }
+        if (appSettings.projectDocuments && appSettings.projectDocuments['Default Document'] !== undefined) {
+            appSettings.projectDocuments['Main Script'] = appSettings.projectDocuments['Default Document'];
+            delete appSettings.projectDocuments['Default Document'];
+        }
         if (!appSettings.hotkeys) appSettings.hotkeys = {};
         for (const [k, v] of Object.entries(defaultHotkeys)) {
             if (appSettings.hotkeys[k] === undefined) appSettings.hotkeys[k] = v;
@@ -594,7 +768,15 @@ window.addEventListener('pywebviewready', async () => {
                 delete parsed['Private Pad'];
             }
             appSettings.projectDocuments = parsed;
-            currentDocument = Object.keys(parsed)[0] || 'Default Document';
+            if (appSettings.projectDocuments['Default Document']) {
+                appSettings.projectDocuments['Main Script'] = appSettings.projectDocuments['Default Document'];
+                delete appSettings.projectDocuments['Default Document'];
+            }
+            if (currentDocument === 'Default Document') {
+                currentDocument = 'Main Script';
+            }
+
+            currentDocument = Object.keys(parsed)[0] || 'Main Script';
             appSettings.currentProjectFile = initialFile.filepath;
             const filename = initialFile.filepath.split('\\').pop().split('/').pop().replace(/\.(rsp|ksp)$/i, '');
             updateProjectName(filename);
@@ -618,9 +800,9 @@ window.addEventListener('pywebviewready', async () => {
                         `Visit GitHub to download the latest release?`;
                     if (confirm(msg)) {
                         if (window.pywebview) {
-                            window.pywebview.api.open_url('https://github.com/XenoHead2/reelscript/releases');
+                            window.pywebview.api.open_url('https://github.com/XENOHEAD/reelscript/releases');
                         } else {
-                            window.open('https://github.com/XenoHead2/reelscript/releases', '_blank');
+                            window.open('https://github.com/XENOHEAD/reelscript/releases', '_blank');
                         }
                     }
                 });
@@ -649,8 +831,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
             }
             const legacyBackup = localStorage.getItem('kindred_script_backup');
-            if (legacyBackup && !appSettings.projectDocuments['Default Document']) {
-                appSettings.projectDocuments['Default Document'] = legacyBackup;
+            if (legacyBackup && !appSettings.projectDocuments['Main Script']) {
+                appSettings.projectDocuments['Main Script'] = legacyBackup;
             }
             initApp();
         }
@@ -816,19 +998,19 @@ function updateProjectName(newName) {
 
 function addToRecent(filepath) {
     if (!appSettings.recentProjects) appSettings.recentProjects = [];
-    
+
     // Remove if already exists so we can move it to the top
     const index = appSettings.recentProjects.indexOf(filepath);
     if (index > -1) {
         appSettings.recentProjects.splice(index, 1);
     }
-    
+
     appSettings.recentProjects.unshift(filepath);
-    
+
     if (appSettings.recentProjects.length > 10) {
         appSettings.recentProjects = appSettings.recentProjects.slice(0, 10);
     }
-    
+
     updateRecentProjectsUI();
 }
 
@@ -836,7 +1018,7 @@ function updateRecentProjectsUI() {
     const list = document.getElementById('recent-projects-list');
     if (!list) return;
     list.innerHTML = '';
-    
+
     if (!appSettings.recentProjects || appSettings.recentProjects.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'dropdown-item';
@@ -846,12 +1028,12 @@ function updateRecentProjectsUI() {
         list.appendChild(empty);
         return;
     }
-    
+
     appSettings.recentProjects.forEach(filepath => {
         let filename = filepath;
         if (filepath.includes('\\')) filename = filepath.split('\\').pop();
         else if (filepath.includes('/')) filename = filepath.split('/').pop();
-        
+
         const item = document.createElement('div');
         item.className = 'dropdown-item';
         item.title = filepath;
@@ -868,7 +1050,15 @@ function updateRecentProjectsUI() {
                             delete parsed['Private Pad'];
                         }
                         appSettings.projectDocuments = parsed;
-                        currentDocument = Object.keys(parsed)[0] || 'Default Document';
+                        if (appSettings.projectDocuments['Default Document']) {
+                            appSettings.projectDocuments['Main Script'] = appSettings.projectDocuments['Default Document'];
+                            delete appSettings.projectDocuments['Default Document'];
+                        }
+                        if (currentDocument === 'Default Document') {
+                            currentDocument = 'Main Script';
+                        }
+
+                        currentDocument = Object.keys(parsed)[0] || 'Main Script';
                         appSettings.currentProjectFile = result.filepath;
                         const finalName = filename.replace(/\.(rsp|ksp)$/i, '');
                         updateProjectName(finalName);
@@ -983,8 +1173,8 @@ document.getElementById('btn-create-new-project').addEventListener('click', asyn
         }
     }
 
-    appSettings.projectDocuments = { 'Default Document': '<p class="action">&#8203;</p>', 'Revision Notes': '', 'Title Page': '' };
-    currentDocument = 'Default Document';
+    appSettings.projectDocuments = { 'Main Script': '<p class="action">&#8203;</p>', 'Revision Notes': '', 'Title Page': '' };
+    currentDocument = 'Main Script';
     updateProjectName(newName);
 
     if (window.pywebview) {
@@ -1030,7 +1220,15 @@ async function handleOpenProject() {
                     delete parsed['Private Pad'];
                 }
                 appSettings.projectDocuments = parsed;
-                currentDocument = Object.keys(parsed)[0] || 'Default Document';
+                if (appSettings.projectDocuments['Default Document']) {
+                    appSettings.projectDocuments['Main Script'] = appSettings.projectDocuments['Default Document'];
+                    delete appSettings.projectDocuments['Default Document'];
+                }
+                if (currentDocument === 'Default Document') {
+                    currentDocument = 'Main Script';
+                }
+
+                currentDocument = Object.keys(parsed)[0] || 'Main Script';
                 appSettings.currentProjectFile = result.filepath;
                 const filename = result.filepath.split('\\').pop().split('/').pop().replace(/\.(rsp|ksp)$/i, '');
                 updateProjectName(filename);
@@ -1093,15 +1291,18 @@ document.getElementById('file-menu-save').addEventListener('click', handleSave);
 document.getElementById('file-menu-save-as').addEventListener('click', handleSaveAs);
 
 document.getElementById('file-menu-close-tab')?.addEventListener('click', () => {
-    const docNames = Object.keys(appSettings.projectDocuments);
+    const docNames = Object.keys(appSettings.projectDocuments).filter(d => d !== 'MindMapData');
     if (docNames.length <= 1) {
         alert("Cannot close the only remaining document.");
         return;
     }
     if (confirm(`Are you sure you want to close "${currentDocument}"?\n\nThis will permanently delete this document's text from the project.`)) {
         delete appSettings.projectDocuments[currentDocument];
-        const remainingDocs = Object.keys(appSettings.projectDocuments);
-        currentDocument = remainingDocs[0];
+        const remainingDocs = Object.keys(appSettings.projectDocuments).filter(d => d !== 'MindMapData');
+        currentDocument = remainingDocs[0] || 'Main Script';
+        if (!appSettings.projectDocuments[currentDocument]) {
+            appSettings.projectDocuments[currentDocument] = '<p class="action">&#8203;</p>';
+        }
         saveSettings();
         rebuildDocumentSidebar();
         loadCurrentDocument();
@@ -1109,7 +1310,7 @@ document.getElementById('file-menu-close-tab')?.addEventListener('click', () => 
 });
 
 document.getElementById('file-menu-close-other-tabs')?.addEventListener('click', () => {
-    const docNames = Object.keys(appSettings.projectDocuments);
+    const docNames = Object.keys(appSettings.projectDocuments).filter(d => d !== 'MindMapData');
     if (docNames.length <= 1) {
         alert("No other documents to close.");
         return;
@@ -1117,8 +1318,10 @@ document.getElementById('file-menu-close-other-tabs')?.addEventListener('click',
     if (confirm(`Are you sure you want to close all documents EXCEPT "${currentDocument}"?\n\nThis will permanently delete the text of all other documents.`)) {
         saveCurrentDocument(); // Ensure current text is saved
         const savedDocText = appSettings.projectDocuments[currentDocument];
+        const savedMindMap = appSettings.projectDocuments['MindMapData'];
         appSettings.projectDocuments = {};
         appSettings.projectDocuments[currentDocument] = savedDocText;
+        if (savedMindMap) appSettings.projectDocuments['MindMapData'] = savedMindMap;
         saveSettings();
         rebuildDocumentSidebar();
     }
@@ -1334,7 +1537,7 @@ editor.addEventListener('input', () => {
                 const lineType = getLineType(p);
                 const startOffset = range.startOffset;
                 const textBefore = node.nodeValue.substring(0, startOffset);
-                
+
                 // Force all typed letters to uppercase in backbone for these blocks
                 if (lineType === 'character' || lineType === 'scene-heading' || lineType === 'transition') {
                     const match = textBefore.match(/([a-z])$/);
@@ -1559,6 +1762,7 @@ const docList = document.getElementById('project-documents-list');
 function rebuildDocumentSidebar() {
     docList.innerHTML = '';
     Object.keys(appSettings.projectDocuments).forEach(docName => {
+        if (docName === 'MindMapData') return;
         const div = document.createElement('div');
         div.className = `sidebar-item ${docName === currentDocument ? 'active' : ''}`;
         div.dataset.docname = docName;
@@ -1589,6 +1793,139 @@ docList.addEventListener('click', (e) => {
         currentDocument = item.dataset.docname;
         rebuildDocumentSidebar();
         loadCurrentDocument();
+    }
+});
+
+// Document Context Menu for Reordering, Renaming, and Deleting
+const docContextMenu = document.createElement('div');
+docContextMenu.id = 'doc-context-menu';
+docContextMenu.className = 'context-menu';
+docContextMenu.style.display = 'none';
+docContextMenu.innerHTML = `
+    <div id="ctx-doc-move-up" class="context-menu-item">⬆️ Move Up</div>
+    <div id="ctx-doc-move-down" class="context-menu-item">⬇️ Move Down</div>
+    <div class="context-menu-divider" style="height: 1px; background: var(--border-color); margin: 4px 0;"></div>
+    <div id="ctx-doc-rename" class="context-menu-item">✏️ Rename</div>
+    <div id="ctx-doc-delete" class="context-menu-item" style="color: #ef4444;">🗑️ Delete</div>
+`;
+document.body.appendChild(docContextMenu);
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('#doc-context-menu')) {
+        docContextMenu.style.display = 'none';
+    }
+});
+
+docList.addEventListener('contextmenu', (e) => {
+    const item = e.target.closest('.sidebar-item');
+    if (!item || item.id === 'add-document-btn') return;
+    
+    e.preventDefault();
+    docContextMenu.targetDoc = item.dataset.docname;
+    
+    docContextMenu.style.display = 'block';
+    let x = e.clientX;
+    let y = e.clientY;
+    
+    if (x + docContextMenu.offsetWidth > window.innerWidth) x = window.innerWidth - docContextMenu.offsetWidth;
+    if (y + docContextMenu.offsetHeight > window.innerHeight) y = window.innerHeight - docContextMenu.offsetHeight;
+    
+    docContextMenu.style.top = `${y}px`;
+    docContextMenu.style.left = `${x}px`;
+});
+
+function swapDocs(docName, direction) {
+    docContextMenu.style.display = 'none';
+    const docs = Object.keys(appSettings.projectDocuments);
+    const idx = docs.indexOf(docName);
+    
+    if (direction === 'up' && idx > 0) {
+        const temp = docs[idx - 1];
+        docs[idx - 1] = docName;
+        docs[idx] = temp;
+    } else if (direction === 'down' && idx > -1 && idx < docs.length - 1) {
+        const temp = docs[idx + 1];
+        docs[idx + 1] = docName;
+        docs[idx] = temp;
+    } else {
+        return;
+    }
+    
+    const newDocs = {};
+    docs.forEach(key => newDocs[key] = appSettings.projectDocuments[key]);
+    appSettings.projectDocuments = newDocs;
+    
+    saveSettings();
+    rebuildDocumentSidebar();
+}
+
+document.getElementById('ctx-doc-move-up').addEventListener('click', (e) => {
+    e.stopPropagation();
+    swapDocs(docContextMenu.targetDoc, 'up');
+});
+
+document.getElementById('ctx-doc-move-down').addEventListener('click', (e) => {
+    e.stopPropagation();
+    swapDocs(docContextMenu.targetDoc, 'down');
+});
+
+document.getElementById('ctx-doc-rename').addEventListener('click', (e) => {
+    e.stopPropagation();
+    docContextMenu.style.display = 'none';
+    const oldName = docContextMenu.targetDoc;
+    if (!oldName) return;
+    
+    const newName = prompt(`Rename "${oldName}" to:`, oldName);
+    if (!newName || newName === oldName) return;
+    if (appSettings.projectDocuments[newName]) {
+        alert("A document with that name already exists!");
+        return;
+    }
+    
+    saveCurrentDocument(); // Ensure current doc is saved before renaming it
+    
+    const docs = Object.keys(appSettings.projectDocuments);
+    const newDocs = {};
+    docs.forEach(key => {
+        if (key === oldName) {
+            newDocs[newName] = appSettings.projectDocuments[oldName];
+        } else {
+            newDocs[key] = appSettings.projectDocuments[key];
+        }
+    });
+    
+    appSettings.projectDocuments = newDocs;
+    if (currentDocument === oldName) {
+        currentDocument = newName;
+    }
+    
+    saveSettings();
+    rebuildDocumentSidebar();
+    
+    if (currentDocument === newName) {
+        loadCurrentDocument();
+    }
+});
+
+document.getElementById('ctx-doc-delete').addEventListener('click', (e) => {
+    e.stopPropagation();
+    docContextMenu.style.display = 'none';
+    const docName = docContextMenu.targetDoc;
+    if (!docName) return;
+    
+    if (Object.keys(appSettings.projectDocuments).length <= 1) {
+        alert("You cannot delete the last document.");
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to delete "${docName}"? This cannot be undone.`)) {
+        delete appSettings.projectDocuments[docName];
+        if (currentDocument === docName) {
+            currentDocument = Object.keys(appSettings.projectDocuments)[0];
+            loadCurrentDocument();
+        }
+        saveSettings();
+        rebuildDocumentSidebar();
     }
 });
 
@@ -1814,8 +2151,8 @@ async function handleImport() {
             }
             if (titlePageText) {
                 appSettings.projectDocuments['Title Page'] = processImportedText(titlePageText, true);
-                appSettings.projectDocuments['Default Document'] = processImportedText(fullText, true);
-                currentDocument = 'Default Document';
+                appSettings.projectDocuments['Main Script'] = processImportedText(fullText, true);
+                currentDocument = 'Main Script';
                 saveSettings();
                 rebuildDocumentSidebar();
                 loadCurrentDocument();
@@ -1975,8 +2312,8 @@ document.getElementById('file-import').addEventListener('change', async (e) => {
             }
             if (titlePageText) {
                 appSettings.projectDocuments['Title Page'] = processImportedText(titlePageText, true);
-                appSettings.projectDocuments['Default Document'] = processImportedText(fullText, true);
-                currentDocument = 'Default Document';
+                appSettings.projectDocuments['Main Script'] = processImportedText(fullText, true);
+                currentDocument = 'Main Script';
                 saveSettings();
                 rebuildDocumentSidebar();
                 loadCurrentDocument();
@@ -2560,7 +2897,15 @@ async function executeCloudLoad() {
                 delete parsed['Private Pad'];
             }
             appSettings.projectDocuments = parsed;
-            currentDocument = Object.keys(parsed)[0] || 'Default Document';
+            if (appSettings.projectDocuments['Default Document']) {
+                appSettings.projectDocuments['Main Script'] = appSettings.projectDocuments['Default Document'];
+                delete appSettings.projectDocuments['Default Document'];
+            }
+            if (currentDocument === 'Default Document') {
+                currentDocument = 'Main Script';
+            }
+
+            currentDocument = Object.keys(parsed)[0] || 'Main Script';
             appSettings.currentProjectFile = result.filepath;
 
             saveSettings();
@@ -2759,10 +3104,10 @@ if (document.getElementById('help-correction-logs')) {
             alert("This feature requires the native app wrapper.");
             return;
         }
-        
+
         correctionLogsContent.innerHTML = '<p style="text-align:center;">Loading logs...</p>';
         correctionLogsModal.style.display = 'flex';
-        
+
         try {
             const logs = await window.pywebview.api.get_format_logs();
             if (!logs || logs.length === 0) {
@@ -2773,15 +3118,15 @@ if (document.getElementById('help-correction-logs')) {
                 correctionLogsContent.innerHTML = `<p style="color:#ef4444;">Error loading logs: ${logs[0].error}</p>`;
                 return;
             }
-            
+
             // Reverse so newest is on top
             logs.reverse();
-            
+
             let html = '';
             logs.forEach(log => {
                 const date = new Date(log.timestamp);
                 const dateString = date.toLocaleString();
-                
+
                 html += `
                     <div style="background: rgba(0,0,0,0.2); border: 1px solid #36424e; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #36424e; padding-bottom: 6px;">
@@ -2789,7 +3134,7 @@ if (document.getElementById('help-correction-logs')) {
                             <span style="color: #9ca3af; font-size: 11px;">${dateString}</span>
                         </div>
                 `;
-                
+
                 if (log.changes && log.changes.length > 0) {
                     html += `<table style="width: 100%; border-collapse: collapse; font-size: 12px;">
                         <thead>
@@ -2800,7 +3145,7 @@ if (document.getElementById('help-correction-logs')) {
                             </tr>
                         </thead>
                         <tbody>`;
-                    
+
                     log.changes.forEach(change => {
                         html += `
                             <tr style="border-bottom: 1px dotted #36424e;">
@@ -2810,18 +3155,46 @@ if (document.getElementById('help-correction-logs')) {
                             </tr>
                         `;
                     });
-                    
+
                     html += `</tbody></table>`;
                 } else {
                     html += `<em style="color: #6b7280; font-size: 12px;">No specific changes recorded.</em>`;
                 }
-                
+
                 html += `</div>`;
             });
-            
+
             correctionLogsContent.innerHTML = html;
         } catch (e) {
             correctionLogsContent.innerHTML = `<p style="color:#ef4444;">Failed to load logs.</p>`;
+        }
+    });
+}
+
+const helpUserManual = document.getElementById('help-user-manual');
+if (helpUserManual) {
+    helpUserManual.addEventListener('click', async () => {
+        if (window.pywebview) {
+            const success = await window.pywebview.api.open_manual();
+            if (!success) {
+                window.open('manual.html', '_blank');
+            }
+        } else {
+            window.open('manual.html', '_blank');
+        }
+    });
+}
+
+const helpWritersGuide = document.getElementById('help-writers-guide');
+if (helpWritersGuide) {
+    helpWritersGuide.addEventListener('click', async () => {
+        if (window.pywebview) {
+            const success = await window.pywebview.api.open_writers_guide();
+            if (!success) {
+                window.open('writers_guide.html', '_blank');
+            }
+        } else {
+            window.open('writers_guide.html', '_blank');
         }
     });
 }
@@ -2839,7 +3212,7 @@ if (btnClearCorrectionLogs) {
         if (!window.pywebview) return;
         const confirmClear = confirm("Are you sure you want to clear all correction logs?");
         if (!confirmClear) return;
-        
+
         try {
             await window.pywebview.api.clear_format_logs();
             correctionLogsContent.innerHTML = '<p style="text-align:center; color: var(--text-muted);">No correction logs found for the past 3 days.</p>';
@@ -2884,8 +3257,8 @@ if (menuCheckGithubUpdates) {
             } else if (result.update_available) {
                 const changelogHtml = result.changelog && result.changelog.length
                     ? `<ul style="margin: 10px 0 0 0; padding-left: 18px; font-size: 12px; color: var(--text-muted);">` +
-                      result.changelog.map(c => `<li style="margin-bottom: 4px;">${c}</li>`).join('') +
-                      `</ul>`
+                    result.changelog.map(c => `<li style="margin-bottom: 4px;">${c}</li>`).join('') +
+                    `</ul>`
                     : '';
                 bodyDiv.innerHTML = `
                     <div style="background: #0d1b2a; border: 1px solid #1b8adb; border-radius: 6px; padding: 14px; margin-bottom: 12px;">
@@ -3067,7 +3440,7 @@ function applyCustomFilterCSS() {
         styleEl.id = 'custom-filter-style';
         document.head.appendChild(styleEl);
     }
-    
+
     if (appSettings.filterCustom && customFilterTypes.length > 0) {
         const notSelectors = customFilterTypes.map(t => `:not(.${t})`).join('');
         styleEl.innerHTML = `body.filter-custom .script-page p${notSelectors} { display: none !important; }`;
@@ -3130,16 +3503,16 @@ function getParagraphLocation(p) {
     const siblings = Array.from(parent.children);
     const lineIndex = siblings.indexOf(p);
     if (lineIndex === -1) return "Unknown Location";
-    
+
     const lineNum = lineIndex + 1;
     let sceneNum = 0;
-    
+
     for (let i = 0; i <= lineIndex; i++) {
         if (siblings[i].classList && siblings[i].classList.contains('scene-heading')) {
             sceneNum++;
         }
     }
-    
+
     const sceneText = sceneNum === 0 ? "Intro" : `Scene ${sceneNum}`;
     return `${sceneText}, Line ${lineNum}`;
 }
@@ -3408,7 +3781,7 @@ function populateCharFilterList() {
 
     charElements.forEach(p => {
         // Extract base name, ignoring things like (V.O.) or (CONT'D)
-        let name = p.textContent.replace(/\(.*?\)/g, '').trim();
+        let name = getCharacterBaseName(p.textContent);
         if (name) {
             if (speakingOnly) {
                 let next = p.nextElementSibling;
@@ -3486,7 +3859,7 @@ function applyCharacterFilter() {
         const type = getLineType(p);
 
         if (type === 'character') {
-            const baseName = p.textContent.replace(/\(.*?\)/g, '').trim();
+            const baseName = getCharacterBaseName(p.textContent);
             keepCurrentBlock = selectedChars.includes(baseName);
             if (keepCurrentBlock) p.classList.remove('char-filtered-hidden');
             else p.classList.add('char-filtered-hidden');
@@ -3526,7 +3899,7 @@ document.getElementById('tools-rename-character').addEventListener('click', () =
     const uniqueChars = new Set();
 
     charElements.forEach(p => {
-        let name = p.textContent.replace(/\(.*?\)/g, '').trim();
+        let name = getCharacterBaseName(p.textContent);
         if (name) uniqueChars.add(name);
     });
 
@@ -3574,10 +3947,14 @@ document.getElementById('btn-apply-rename').addEventListener('click', () => {
         const type = getLineType(p);
 
         if (type === 'character') {
-            // Targets base name (prevents destroying extensions like " (V.O.)")
-            const baseName = p.textContent.replace(/\(.*?\)/g, '').trim();
+            const baseName = getCharacterBaseName(p.textContent);
             if (baseName === oldName) {
-                p.textContent = p.textContent.replace(oldName, newName);
+                const extensionMatch = p.textContent.match(/\s*\(.*?\)/);
+                if (extensionMatch) {
+                    p.textContent = `${newName}${extensionMatch[0]}`;
+                } else {
+                    p.textContent = newName;
+                }
                 charCount++;
             }
         } else if (replaceAll && (type === 'action' || type === 'dialogue')) {
@@ -4083,7 +4460,8 @@ window.restoreSnapshot = (id) => {
     const snap = appSettings.snapshots.find(s => s.id === id);
     if (snap && confirm(`Restore "${snap.name}"? This will overwrite your current project state.`)) {
         appSettings.projectDocuments = JSON.parse(JSON.stringify(snap.documents));
-        currentDocument = Object.keys(appSettings.projectDocuments)[0] || 'Default Document';
+        const validDocs = Object.keys(appSettings.projectDocuments).filter(d => d !== 'MindMapData');
+        currentDocument = validDocs[0] || 'Main Script';
         rebuildDocumentSidebar(); loadCurrentDocument(); saveSettings();
         snapshotsModal.style.display = 'none';
     }
@@ -4132,6 +4510,26 @@ if (localNotesArea) {
     localNotesArea.value = localStorage.getItem('reelscript_local_notes') || '';
     localNotesArea.addEventListener('input', () => {
         localStorage.setItem('reelscript_local_notes', localNotesArea.value);
+    });
+}
+
+const navSaveBtn = document.getElementById('nav-save-btn');
+if (navSaveBtn) {
+    navSaveBtn.addEventListener('click', () => {
+        if (typeof handleSave === 'function') handleSave();
+    });
+}
+
+const navStayTopBtn = document.getElementById('nav-stay-top-btn');
+if (navStayTopBtn) {
+    navStayTopBtn.addEventListener('click', async () => {
+        if (window.pywebview && window.pywebview.api) {
+            const isOnTop = await window.pywebview.api.toggle_always_on_top();
+            const icon = document.getElementById('stay-top-icon');
+            if (icon) {
+                icon.style.color = isOnTop ? '#ef4444' : 'var(--text-muted)';
+            }
+        }
     });
 }
 
@@ -4404,7 +4802,7 @@ function openDocStats() {
     const pages = Math.max(1, Math.ceil(editor.scrollHeight / pageHeightPixels));
 
     // Count by element type
-    const counts = { 'scene-heading':0, action:0, character:0, dialogue:0, parenthetical:0, transition:0, shot:0, other:0 };
+    const counts = { 'scene-heading': 0, action: 0, character: 0, dialogue: 0, parenthetical: 0, transition: 0, shot: 0, other: 0 };
     const charDialogueCounts = {};
     let lastChar = null;
     let totalWords = 0;
@@ -4421,7 +4819,7 @@ function openDocStats() {
         totalWords += wc;
 
         if (type === 'character') {
-            lastChar = text.replace(/\(.*?\)/g, '').trim();
+            lastChar = getCharacterBaseName(text);
         } else if (type === 'dialogue') {
             dialogueWords += wc;
             if (lastChar) {
@@ -4445,9 +4843,9 @@ function openDocStats() {
         ? `<div style="background:#1a232c; border-radius:6px; padding:10px 12px;">
             <p style="font-size:11px; color:var(--text-muted); margin:0 0 8px 0; text-transform:uppercase; letter-spacing:0.05em;">Dialogue Lines per Character</p>
             ${topChars.map(([name, ct]) => {
-                const maxCt = topChars[0][1];
-                const pct = Math.round((ct / maxCt) * 100);
-                return `<div style="margin-bottom:6px;">
+            const maxCt = topChars[0][1];
+            const pct = Math.round((ct / maxCt) * 100);
+            return `<div style="margin-bottom:6px;">
                     <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:2px;">
                         <span style="color:white;">${name}</span><span style="color:#10b981;">${ct}</span>
                     </div>
@@ -4455,7 +4853,7 @@ function openDocStats() {
                         <div style="background:#1b8adb; width:${pct}%; height:4px; border-radius:3px;"></div>
                     </div>
                 </div>`;
-            }).join('')}
+        }).join('')}
           </div>`
         : '';
 
@@ -4508,7 +4906,7 @@ function openCheckFormat() {
         if (!text) { prevType = null; return; }
         lineNum++;
 
-        const type = ['scene-heading','action','character','dialogue','parenthetical','transition','shot']
+        const type = ['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition', 'shot']
             .find(t => p.classList.contains(t)) || 'other';
 
         // Rule 1 – Dialogue without a character line above it
@@ -4518,7 +4916,7 @@ function openCheckFormat() {
 
         // Rule 2 – Character name not in ALL CAPS
         if (type === 'character') {
-            const name = text.replace(/\(.*?\)/g, '').trim();
+            const name = getCharacterBaseName(text);
             if (name !== name.toUpperCase()) {
                 addIssue(lineNum, 'warning', 'Character Not Uppercase', `"${name}" — character names must be ALL CAPS.`, p);
             }
@@ -4526,7 +4924,7 @@ function openCheckFormat() {
 
         // Rule 3 – Scene heading not starting with INT./EXT.
         if (type === 'scene-heading' && !SCENE_PREFIXES.test(text)) {
-            addIssue(lineNum, 'warning', 'Scene Heading Format', `"${text.slice(0,40)}" — should start with INT. or EXT.`, p);
+            addIssue(lineNum, 'warning', 'Scene Heading Format', `"${text.slice(0, 40)}" — should start with INT. or EXT.`, p);
         }
 
         // Rule 4 – Parenthetical not following character or dialogue
@@ -4562,12 +4960,12 @@ function openCheckFormat() {
         prevType = type;
     });
 
-    const errors   = issues.filter(i => i.severity === 'error').length;
+    const errors = issues.filter(i => i.severity === 'error').length;
     const warnings = issues.filter(i => i.severity === 'warning').length;
-    const infos    = issues.filter(i => i.severity === 'info').length;
+    const infos = issues.filter(i => i.severity === 'info').length;
 
     const severityStyle = { error: '#ef4444', warning: '#f59e0b', info: '#3b82f6' };
-    const severityIcon  = { error: '🔴', warning: '🟡', info: '🔵' };
+    const severityIcon = { error: '🔴', warning: '🟡', info: '🔵' };
 
     const summaryEl = document.getElementById('check-format-summary');
     if (issues.length === 0) {
@@ -4612,7 +5010,7 @@ document.getElementById('btn-close-check-format').addEventListener('click', () =
 
 // --- Draggable Check Formatting Panel ---
 const checkFormatContent = document.getElementById('check-format-content');
-const checkFormatHeader  = document.getElementById('check-format-header');
+const checkFormatHeader = document.getElementById('check-format-header');
 
 let isCheckFormatDragging = false;
 let cfDragOffsetX = 0, cfDragOffsetY = 0;
@@ -4630,7 +5028,7 @@ if (checkFormatHeader && checkFormatContent) {
     document.addEventListener('mousemove', (e) => {
         if (isCheckFormatDragging) {
             checkFormatContent.style.left = (e.clientX - cfDragOffsetX) + 'px';
-            checkFormatContent.style.top  = (e.clientY - cfDragOffsetY) + 'px';
+            checkFormatContent.style.top = (e.clientY - cfDragOffsetY) + 'px';
         }
     });
 
@@ -4641,13 +5039,13 @@ if (checkFormatHeader && checkFormatContent) {
 
 
 // Global hook for Mind Map secondary window to update notes
-window.updateMindmapNote = function(sceneId, noteContent) {
+window.updateMindmapNote = function (sceneId, noteContent) {
     appSettings.mindmapNotes = appSettings.mindmapNotes || {};
     appSettings.mindmapNotes[sceneId] = noteContent;
 };
 
 // Global hook for Character Bible notes
-window.updateCharacterNote = function(charName, noteContent) {
+window.updateCharacterNote = function (charName, noteContent) {
     appSettings.characterNotes = appSettings.characterNotes || {};
     appSettings.characterNotes[charName] = noteContent;
 };
@@ -4658,13 +5056,13 @@ document.getElementById('tools-fix-colors')?.addEventListener('click', () => {
     const paras = Array.from(editor.querySelectorAll('p'));
     let changedCount = 0;
     const changesArray = [];
-    
+
     paras.forEach((p) => {
         let changed = false;
         let pPreview = p.textContent.trim().substring(0, 30);
         if (p.textContent.trim().length > 30) pPreview += "...";
         if (pPreview.length === 0) pPreview = "[Empty Block]";
-        
+
         // Strip inline styles on the paragraph itself
         if (p.style.color || p.style.backgroundColor) {
             p.style.color = '';
@@ -4672,7 +5070,7 @@ document.getElementById('tools-fix-colors')?.addEventListener('click', () => {
             changed = true;
             changesArray.push({ issue: "Inline color on block", fix: "Stripped style color/backgroundColor", context: `${getParagraphLocation(p)}: "${pPreview}"` });
         }
-        
+
         // Strip inline styles and font color tags from children
         p.querySelectorAll('*').forEach(child => {
             if (child.style && (child.style.color || child.style.backgroundColor)) {
@@ -4687,14 +5085,14 @@ document.getElementById('tools-fix-colors')?.addEventListener('click', () => {
                 changesArray.push({ issue: "<font> tag with color attribute", fix: "Stripped color attribute", context: `${getParagraphLocation(p)}: "${pPreview}"` });
             }
         });
-        
+
         if (changed) changedCount++;
     });
-    
+
     if (changedCount > 0) {
         logAutoFormatAction("Fix Color Maps", changesArray);
     }
-    
+
     alert('Color Maps fixed! Stripped inline colors from ' + changedCount + ' line(s) to restore standard block formatting.');
     saveCurrentDocument();
 });

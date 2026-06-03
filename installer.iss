@@ -13,8 +13,8 @@
 
 #define AppName        "ReelScript"
 #define AppVersion     "2.8.0"
-#define AppPublisher   "XenoHead2"
-#define AppURL         "https://github.com/XenoHead2/reelscript"
+#define AppPublisher   "XenoHead"
+#define AppURL         "https://github.com/XENOHEAD/reelscript"
 #define AppExeName     "ReelScript.exe"
 #define AppDescription "Professional Screenplay Editor"
 
@@ -81,9 +81,17 @@ Source: "version.json";        DestDir: "{app}"; Flags: ignoreversion
 
 ; Documentation
 Source: "ReelScript_Manual.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "manual.html";           DestDir: "{app}"; Flags: ignoreversion
+Source: "writers_guide.html";    DestDir: "{app}"; Flags: ignoreversion
+Source: "writer_guide_hero.png"; DestDir: "{app}"; Flags: ignoreversion
+Source: "writer_guide_blueprint.png"; DestDir: "{app}"; Flags: ignoreversion
+Source: "screenshot.png";            DestDir: "{app}"; Flags: ignoreversion
+Source: "ai_assistant.png";      DestDir: "{app}"; Flags: ignoreversion
+Source: "collaboration.png";     DestDir: "{app}"; Flags: ignoreversion
+Source: "backups_sync.png";      DestDir: "{app}"; Flags: ignoreversion
 
 ; Sample project (optional — ships with the installer)
-Source: "QuietHours.ksp"; DestDir: "{userdocs}\ReelScript\Samples"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "SampleProject.rsp"; DestDir: "{userdocs}\ReelScript\Samples"; Flags: ignoreversion skipifsourcedoesntexist
 
 [Dirs]
 ; Create the user's backup/settings folder on install

@@ -56,7 +56,7 @@
 - **Export to Final Draft (.fdx)** — native format for producers and agents
 
 ### 🔄 Automatic Updates
-- Checks [GitHub](https://github.com/XenoHead2/reelscript/releases) for new versions silently on every launch
+- Checks [GitHub](https://github.com/XENOHEAD/reelscript/releases) for new versions silently on every launch
 - A **⚡ UPDATE NOW** banner appears in the title bar when an update is available
 - **Customize → Check for Updates...** to check manually at any time
 - No telemetry — the only network call is a single read of `version.json` from GitHub
@@ -97,7 +97,7 @@
 
 ### For End Users
 
-1. Download **`ReelScript_Setup.exe`** from [GitHub Releases](https://github.com/XenoHead2/reelscript/releases).
+1. Download **`ReelScript_Setup.exe`** from [GitHub Releases](https://github.com/XENOHEAD/reelscript/releases).
 2. Double-click it and follow the install wizard.
 3. A **ReelScript** shortcut will appear on your Desktop and in the Start Menu.
 4. `.rsp` project files are automatically associated with the app.
@@ -152,7 +152,8 @@ reelscript/
 ├── build.bat               # One-click build + package script
 ├── requirements.txt        # Python dependencies
 ├── version.json            # Version & changelog
-├── ReelScript_Manual.txt   # Full user manual
+├── ReelScript_Manual.txt   # Plain text user manual
+├── manual.html             # Fancy HTML user manual
 └── FEATURE FILM SCREENPLAY FORMAT.docx  # Format reference
 ```
 
@@ -160,7 +161,7 @@ reelscript/
 
 ## 📖 Documentation
 
-For full usage details, see the [ReelScript Manual](./ReelScript_Manual.txt).
+For full usage details, see the [Fancy HTML Manual](./manual.html) or the [Plain Text Manual](./ReelScript_Manual.txt).
 
 ---
 

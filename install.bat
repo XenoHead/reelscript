@@ -21,11 +21,9 @@ if exist "%~dp0dist\ReelScript.exe" (
 )
 
 :: 2b. Copy the Sample Project
-echo Copying QuietHours.rsp to installation folder...
-if exist "%~dp0QuietHours.rsp" (
-    copy /Y "%~dp0QuietHours.rsp" "C:\ReelScript\QuietHours.rsp"
-) else if exist "%~dp0QuietHours.ksp" (
-    copy /Y "%~dp0QuietHours.ksp" "C:\ReelScript\QuietHours.rsp"
+echo Copying SampleProject.rsp to installation folder...
+if exist "%~dp0SampleProject.rsp" (
+    copy /Y "%~dp0SampleProject.rsp" "C:\ReelScript\SampleProject.rsp"
 )
 
 :: 3. Set the Environment Variable (Persistent for User)

@@ -28,11 +28,20 @@ python -m PyInstaller --noconfirm --onefile --windowed ^
   --add-data "script.js;." ^
   --add-data "version.json;." ^
   --add-data "editor.PY;." ^
+  --add-data "manual.html;." ^
+  --add-data "writers_guide.html;." ^
+  --add-data "writer_guide_hero.png;." ^
+  --add-data "writer_guide_blueprint.png;." ^
+  --add-data "mindmap.html;." ^
+  --add-data "mindmap.css;." ^
+  --add-data "mindmap.js;." ^
   --hidden-import webview ^
   --hidden-import fpdf ^
   --hidden-import fpdf2 ^
   --hidden-import spellchecker ^
   --hidden-import editor ^
+  --hidden-import google.genai ^
+  --hidden-import requests ^
   --hidden-import tkinter ^
   --hidden-import tkinter.filedialog ^
   reelscript.pyw

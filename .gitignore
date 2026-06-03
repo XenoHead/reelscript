@@ -220,3 +220,7 @@ format_tools_log.json
 *log*.json
 *.log.json
 test*.py
+settings.json
+
+Backups/
+

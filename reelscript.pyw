@@ -66,16 +66,50 @@ active_window = None
 
 class BackendAPI:
     def __init__(self):
-        # Set up a default backup directory in the user's Documents folder
-        self.app_data_dir = os.path.join(os.path.expanduser("~"), "Documents", "ReelScript")
+        # Determine the directory where the program is running from
+        if getattr(sys, 'frozen', False):
+            run_dir = os.path.dirname(sys.executable)
+        else:
+            run_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # Check if we can write to run_dir (portable mode)
+        use_portable = False
+        try:
+            test_file = os.path.join(run_dir, ".write_test")
+            with open(test_file, "w") as f:
+                pass
+            os.remove(test_file)
+            use_portable = True
+        except (IOError, OSError, PermissionError):
+            use_portable = False
+
+        if use_portable:
+            self.app_data_dir = run_dir
+            self.backup_dir = os.path.join(run_dir, "Backups")
+            self.settings_file = os.path.join(run_dir, "settings.json")
+        else:
+            self.app_data_dir = os.path.join(os.path.expanduser("~"), "Documents", "ReelScript")
+            self.backup_dir = os.path.join(self.app_data_dir, "Backups")
+            self.settings_file = os.path.join(self.backup_dir, "settings.json")
+
         self.save_directory = ""
-        self.backup_dir = os.path.join(self.app_data_dir, "Backups")
         self.mindmap_data = {}
         
         if not os.path.exists(self.backup_dir):
-            os.makedirs(self.backup_dir)
+            try:
+                os.makedirs(self.backup_dir)
+            except Exception:
+                pass
+
+        # Migrate existing settings to portable if they exist
+        legacy_settings_file = os.path.join(os.path.expanduser("~"), "Documents", "ReelScript", "Backups", "settings.json")
+        if use_portable and not os.path.exists(self.settings_file) and os.path.exists(legacy_settings_file):
+            try:
+                import shutil
+                shutil.copy2(legacy_settings_file, self.settings_file)
+            except Exception:
+                pass
             
-        self.settings_file = os.path.join(self.backup_dir, "settings.json")
         self.personal_dict = set()
         self.spell = None
         
@@ -232,6 +266,62 @@ print(file)
         import webbrowser
         webbrowser.open(url)
         return True
+
+    def open_manual(self):
+        try:
+            # First look in current_dir (where the resources reside)
+            manual_path = os.path.join(current_dir, "manual.html")
+            if os.path.exists(manual_path):
+                import webview
+                webview.create_window('ReelScript Manual', url=manual_path, js_api=self, width=1024, height=768, text_select=True)
+                return True
+                
+            # Fallback to run directory
+            if getattr(sys, 'frozen', False):
+                run_dir = os.path.dirname(sys.executable)
+            else:
+                run_dir = os.path.dirname(os.path.abspath(__file__))
+            manual_path = os.path.join(run_dir, "manual.html")
+            if os.path.exists(manual_path):
+                import webview
+                webview.create_window('ReelScript Manual', url=manual_path, js_api=self, width=1024, height=768, text_select=True)
+                return True
+        except Exception:
+            pass
+        return False
+
+    def open_writers_guide(self):
+        try:
+            if getattr(sys, 'frozen', False):
+                run_dir = os.path.dirname(sys.executable)
+            else:
+                run_dir = os.path.dirname(os.path.abspath(__file__))
+            
+            # 1. Try relative to executable (installer puts it here)
+            guide_path = os.path.join(run_dir, "writers_guide.html")
+            if os.path.exists(guide_path):
+                import webview
+                webview.create_window("Screenplay Writer's Guide", url=guide_path, js_api=self, width=1024, height=768, text_select=True)
+                return True
+                
+            # 2. Try MEIPASS (one-file execution without installer)
+            if hasattr(sys, '_MEIPASS'):
+                guide_path = os.path.join(sys._MEIPASS, "writers_guide.html")
+                if os.path.exists(guide_path):
+                    import webview
+                    webview.create_window("Screenplay Writer's Guide", url=guide_path, js_api=self, width=1024, height=768, text_select=True)
+                    return True
+                    
+            # 3. Fallback to current_dir
+            guide_path = os.path.join(current_dir, "writers_guide.html")
+            if os.path.exists(guide_path):
+                import webview
+                webview.create_window("Screenplay Writer's Guide", url=guide_path, js_api=self, width=1024, height=768, text_select=True)
+                return True
+                
+        except Exception as e:
+            print(f"Error opening writer's guide: {e}")
+        return False
 
     def _enforce_backup_limit(self, directory, prefix, max_backups):
         if not directory or not os.path.exists(directory) or max_backups <= 0:
@@ -618,10 +708,68 @@ print(file)
     def open_mindmap_window(self):
         try:
             mindmap_html = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mindmap.html')
-            webview.create_window('Mind Map & Corkboard', url=mindmap_html, js_api=self, width=1024, height=768)
+            self._mindmap_window = webview.create_window('Mind Map & Corkboard', url=mindmap_html, js_api=self, width=1024, height=768)
             return "OK"
         except Exception as e:
             return f"Error: {str(e)}"
+
+    def request_mindmap_rescan(self, sync_type, sync_id):
+        global active_window
+        import json
+        if active_window:
+            try:
+                active_window.evaluate_js(f"if(window.rescanMindmapCard) window.rescanMindmapCard({json.dumps(sync_type)}, {json.dumps(sync_id)});")
+            except Exception:
+                pass
+        return "OK"
+        
+    def update_mindmap_card_content(self, sync_type, sync_id, title_text, body_html):
+        global active_window
+        import json
+        if active_window:
+            try:
+                active_window.evaluate_js(f"if(window.updateMindmapCardContent) window.updateMindmapCardContent({json.dumps(sync_type)}, {json.dumps(sync_id)}, {json.dumps(title_text)}, {json.dumps(body_html)});")
+            except Exception:
+                pass
+        return "OK"
+
+    def create_mindmap_group(self, group_type, group_name):
+        global active_window
+        import json
+        if active_window:
+            try:
+                active_window.evaluate_js(f"if(window.createMindmapGroup) window.createMindmapGroup({json.dumps(group_type)}, {json.dumps(group_name)});")
+            except Exception:
+                pass
+        return "OK"
+
+    def assign_card_to_group(self, sync_type, sync_id, group_id):
+        global active_window
+        import json
+        if active_window:
+            try:
+                active_window.evaluate_js(f"if(window.assignCardToGroup) window.assignCardToGroup({json.dumps(sync_type)}, {json.dumps(sync_id)}, {json.dumps(group_id)});")
+            except Exception:
+                pass
+        return "OK"
+
+    def toggle_group_collapse(self, group_type, group_id, is_collapsed):
+        global active_window
+        import json
+        if active_window:
+            try:
+                active_window.evaluate_js(f"if(window.toggleGroupCollapse) window.toggleGroupCollapse({json.dumps(group_type)}, {json.dumps(group_id)}, {json.dumps(is_collapsed)});")
+            except Exception:
+                pass
+        return "OK"
+
+    def notify_mindmap_updated(self):
+        if hasattr(self, '_mindmap_window') and self._mindmap_window:
+            try:
+                self._mindmap_window.evaluate_js("if(window.refreshMindmap) window.refreshMindmap();")
+            except Exception:
+                pass
+        return "OK"
             
     def update_mindmap_note(self, scene_id, note_content):
         global active_window
@@ -729,7 +877,7 @@ print(file)
 
     def check_for_github_updates(self):
         """Fetch version.json from GitHub and compare against local version."""
-        GITHUB_VERSION_URL = "https://raw.githubusercontent.com/XenoHead2/reelscript/main/version.json"
+        GITHUB_VERSION_URL = "https://raw.githubusercontent.com/XENOHEAD/reelscript/main/version.json"
         try:
             import urllib.request
             local_info = self.get_version_info()
@@ -870,6 +1018,13 @@ del "%~f0"
         except Exception as e:
             return {"error": f"Failed to launch update installer: {str(e)}"}
 
+    def toggle_always_on_top(self):
+        global active_window
+        if active_window:
+            active_window.on_top = not active_window.on_top
+            return active_window.on_top
+        return False
+
     def exit_app(self):
         global active_window
         if active_window:
@@ -976,7 +1131,8 @@ if __name__ == '__main__':
         
         active_window = webview.create_window(f'ReelScript {version_str}', url=html_path, js_api=api, width=1280, height=800)
 
-        icon_path = os.path.join(current_dir, 'movie-icon.ico')
+        icon_filename = 'movie-icon.ico' if os.name == 'nt' else 'movie-icon.png'
+        icon_path = os.path.join(current_dir, icon_filename)
         if os.path.exists(icon_path):
             webview.start(icon=icon_path, debug=False)
         else:

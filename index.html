@@ -183,6 +183,8 @@
         </div>
         <div class="menu-item dropdown" id="help-menu">Help
             <div class="dropdown-content">
+                <div class="dropdown-item" id="help-user-manual"><span>📖 User Manual</span></div>
+                <div class="dropdown-item" id="help-writers-guide"><span>📖 Writer's Guide</span></div>
                 <div class="dropdown-item" id="help-correction-logs"><span>📝 Correction Logs</span></div>
             </div>
         </div>
@@ -194,6 +196,8 @@
             <div class="icon-nav-item active" id="nav-project-btn"><span class="icon-nav-icon">📋</span>Script</div>
             <div class="icon-nav-item" id="nav-scenes-btn"><span class="icon-nav-icon">🎬</span>Scenes</div>
             <div class="icon-nav-item" id="nav-notes-btn"><span class="icon-nav-icon">💬</span>My Notes</div>
+            <div class="icon-nav-item" id="nav-save-btn"><span class="icon-nav-icon">💾</span>Save</div>
+            <div class="icon-nav-item" id="nav-stay-top-btn"><span class="icon-nav-icon" id="stay-top-icon" style="color: var(--text-muted);">📌</span>On Top</div>
         </div>
         
         <div class="project-sidebar">
@@ -588,7 +592,7 @@
             </div>
             <div id="github-update-result" style="display:none;">
                 <div id="github-update-body"></div>
-                <button id="btn-goto-github" class="modal-btn" style="background-color: #1b8adb; width: 100%; margin-top: 10px; display:none;" onclick="window.pywebview ? window.pywebview.api.open_url('https://github.com/XenoHead2/reelscript/releases') : window.open('https://github.com/XenoHead2/reelscript/releases','_blank')">
+                <button id="btn-goto-github" class="modal-btn" style="background-color: #1b8adb; width: 100%; margin-top: 10px; display:none;" onclick="window.pywebview ? window.pywebview.api.open_url('https://github.com/XENOHEAD/reelscript/releases') : window.open('https://github.com/XENOHEAD/reelscript/releases','_blank')">
                     📦 Download Latest Release from GitHub
                 </button>
             </div>

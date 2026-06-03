@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screenplay Writer's Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root[data-theme="dark"] {
+            --bg-primary: #0b0f19;
+            --bg-secondary: #131a2c;
+            --bg-tertiary: #1e293b;
+            --bg-accent: rgba(99, 102, 241, 0.15);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+        }
+
+        /* Scrollbar styles */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); border-left: 1px solid var(--border-color); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 10px; border: 2px solid var(--bg-primary); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .hero {
+            position: relative;
+            height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hero img {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            z-index: 1;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(11,15,25,0.2) 0%, rgba(11,15,25,1) 100%);
+            z-index: 2;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+            letter-spacing: -0.03em;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-top: 60px;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h2::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 30px;
+            background: var(--accent);
+            border-radius: 4px;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            color: var(--text-primary);
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .example {
+            background-color: var(--bg-secondary);
+            padding: 25px;
+            border-left: 4px solid var(--accent);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 25px 0;
+            white-space: pre-wrap;
+            color: #e2e8f0;
+            border-radius: 0 12px 12px 0;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+
+        .example::before {
+            content: 'EXAMPLE';
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            opacity: 0.5;
+        }
+
+        .list-item {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+
+        .list-item::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .image-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px;
+            margin: 40px 0;
+            box-shadow: var(--card-shadow);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        th, td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--bg-tertiary);
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: var(--bg-accent); }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        sup a { padding: 0 2px; }
+
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <img src="writer_guide_hero.png" alt="Writer's Guide Hero">
+        <div class="hero-content">
+            <h1>Screenplay Writer's Guide</h1>
+            <div class="hero-subtitle">The Typographical Landscape & formatting standards of modern screenplays.</div>
+        </div>
+    </div>
+    
+    <div class="container">
+
+    <div class="image-card">
+        <img src="writer_guide_blueprint.png" alt="Screenplay Blueprint">
+    </div>
+<p>The screenplay is a highly specialized, minimalist literary form designed to serve as a functional, technical blueprint for a collaborative, visual medium. Unlike novels or theatrical plays—which rely on internal monologues, extensive descriptions, or stage-oriented blocking—a screenplay must convey its story entirely through what can be physically seen and heard on screen.</p>
+
+<p>This strict demand for visual externalization has resulted in a rigid typographical ecosystem that has remained virtually unchanged since the era of mechanical typewriters.</p>
+
+<p>Within this structural framework, every element on the page is assigned a specific spatial coordinate, font weight, and programmatic function.<sup><a href="#fn2">2</a></sup> To comprehend how a screenwriter controls the pacing and visual flow of a film, one must understand how to master the primary formatting elements:</p>
+
+<ul style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+    <li>Master Scene Heading</li>
+    <li>Action</li>
+    <li>Character Cue</li>
+    <li>Dialogue</li>
+    <li>Parentheticals</li>
+    <li>Transitions</li>
+    <li>Shot</li>
+</ul>
+
+<p>And how they interact under the industry-accepted layout known as the American Screenwriting Standard (or master-scene format).</p>
+
+<h2>1. General Page Layout, Geometry, and Typography</h2>
+<p>The layout rules of the American Screenwriting Standard are mathematically fixed to preserve a critical industry calculation: one page of formatted script equals roughly one minute of screentime.</p>
+
+<p>If margins, font, or line spacing are modified, this page-to-minute ratio breaks down, impacting scheduling, budgeting, and production planning.<sup><a href="#fn3">3</a></sup></p>
+
+<h3>Paper and Binding Specifications</h3>
+<p>For hard copies, the physical layout demands strict adherence to traditional materials:</p>
+<div class="list-item"><strong>Paper Size:</strong> Standard US Letter (8.5 inches by 11 inches).</div>
+<div class="list-item"><strong>Paper Stock:</strong> Plain white, 20 lb. bond paper.</div>
+<div class="list-item"><strong>Printing:</strong> Single-sided only.</div>
+<div class="list-item"><strong>Binding:</strong> Three-hole punched paper bound with exactly two brass brads (fastened in the top and bottom holes, leaving the center hole empty). Avoid folders, fancy covers, or plastic bindings.<sup><a href="#fn4">4</a></sup></div>
+
+<h3>Typographical Standards</h3>
+<div class="list-item"><strong>Font Type and Size:</strong> Standard Courier 12-point (10-pitch). Using proportional fonts (like Times New Roman) or other sizing immediately marks a script as amateurish. Monospaced fonts ensure that every letter and space occupies the exact same horizontal width, which is the foundational basis for the one-minute-per-page calculation.</div>
+<div class="list-item"><strong>Line Spacing:</strong> The document is single-spaced internally, with double-spacing (one blank line) separating distinct scene elements.</div>
+<div class="list-item"><strong>Page Volume:</strong> This results in approximately 55 vertical lines of text per page (excluding headers), up to a maximum of 60 lines.<sup><a href="#fn6">6</a></sup></div>
+<div class="list-item"><strong>Page Numbering:</strong> Placed in the top right-hand corner of the page, flush to the right margin, exactly 0.5 inches from the top edge, followed by a period (e.g., 2.). The title page and the very first page of the script are left unnumbered. Numbering officially begins on the third physical sheet of the document (page 2).</div>
+
+<h2>2. The Page Margin Matrix</h2>
+<p>Screenplay margins are significantly wider than standard prose margins.3 The left margin is 
+particularly wide to allow room for the three-hole punching and brass brads without obscuring 
+the text. 
+The measurements below are measured from the absolute physical edge of the paper <sup><a href="#fn2">2</a></sup>:</p>
+<table>
+    <thead>
+        <tr>
+            <th>Screenplay Element</th>
+            <th>Left Margin (Inches)</th>
+            <th>Right Margin (Inches)</th>
+            <th>Typographical Style</th>
+            <th>Primary Target Audience</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Master Scene Heading</strong></td>
+            <td>1.5&quot;</td>
+            <td>1.0&quot;</td>
+            <td>ALL CAPS</td>
+            <td>Line Producers, Assistant Directors</td>
+        </tr>
+        <tr>
+            <td><strong>Action / Description</strong></td>
+            <td>1.5&quot;</td>
+            <td>1.0&quot;</td>
+            <td>Sentence Case, Present Tense</td>
+            <td>Director, Actors, Cinematographer</td>
+        </tr>
+        <tr>
+            <td><strong>Character Cue</strong></td>
+            <td>3.7&quot; to 4.1&quot;</td>
+            <td>N/A</td>
+            <td>ALL CAPS</td>
+            <td>Actors, Sound Recordists</td>
+        </tr>
+        <tr>
+            <td><strong>Parenthetical ( )</strong></td>
+            <td>3.1&quot; to 3.4&quot;</td>
+            <td>3.1&quot; <sup><a href="#fn3">3</a></sup></td>
+            <td>Lowercase inside ( )</td>
+            <td>Actors, Director</td>
+        </tr>
+        <tr>
+            <td><strong>Dialogue</strong></td>
+            <td>2.5&quot; to 2.7&quot;</td>
+            <td>1.5&quot; to 2.4&quot;</td>
+            <td>Sentence Case <sup><a href="#fn1">1</a></sup></td>
+            <td>Actors, Sound Recordists</td>
+        </tr>
+        <tr>
+            <td><strong>Transition</strong></td>
+            <td>6.0&quot; <sup><a href="#fn3">3</a></sup></td>
+            <td>Right-Aligned</td>
+            <td>ALL CAPS, ends in :</td>
+            <td>Editor, Director</td>
+        </tr>
+        <tr>
+            <td><strong>Shot Heading</strong></td>
+            <td>1.7&quot; <sup><a href="#fn4">4</a></sup></td>
+            <td>1.1&quot; <sup><a href="#fn4">4</a></sup></td>
+            <td>ALL CAPS <sup><a href="#fn4">4</a></sup></td>
+            <td>Director, Cinematographer</td>
+        </tr>
+    </tbody>
+</table>
+<h2>3. The Six Core Elements of Screenplay Format</h2>
+<p>The American Screenwriting Standard structures all narrative actions and dialogue blocks into six major formatting elements:</p>
+
+<h3>A. Scene Headings (Sluglines)</h3>
+<p>Located at the beginning of each scene, this line establishes the environment.<sup><a href="#fn9">9</a></sup> It must be written in ALL CAPS and contains three distinct components:</p>
+
+<div class="list-item"><strong>1. Interior or Exterior Designation:</strong> INT. (interior) or EXT. (exterior).
+    <ul style="margin-top: 5px; color: var(--text-secondary);">
+        <li>For scenes transitioning between both (e.g., inside a moving car), use INT./EXT. or I./E..</li>
+    </ul>
+</div>
+<div class="list-item"><strong>2. Location:</strong> The specific physical setting (e.g., KEVIN'S HOUSE - KITCHEN).
+    <ul style="margin-top: 5px; color: var(--text-secondary);">
+        <li>Sub-locations can be clarified with hyphens.</li>
+    </ul>
+</div>
+<div class="list-item"><strong>3. Time of Day:</strong> Standard designations are DAY or NIGHT. Special modifiers like MORNING, AFTERNOON, SAME, or CONTINUOUS are acceptable when continuity is key.</div>
+
+<div class="example">INT. KEVIN'S HOUSE - KITCHEN - DAY</div>
+
+<h3>B. Action (Screen Direction)</h3>
+<p>This narrative block describes the physical environment, character movements, and auditory events.</p>
+<div class="list-item">Always written in the present tense.</div>
+<div class="list-item">Limited strictly to what can be physically seen and heard by an audience.</div>
+<div class="list-item"><strong>Character Introductions:</strong> When a character is introduced for the first time:
+    <ul style="margin-top: 5px; color: var(--text-secondary);">
+        <li>Their name is capitalized in ALL CAPS, followed by their age in parentheses and a brief description.</li>
+    </ul>
+</div>
+
+<div class="example">The back door swings open. LIAM (30s), a disheveled accountant, stumbles inside clutching a blood-stained folder.</div>
+
+<h3>C. Character Cue</h3>
+<p>Before any dialogue is spoken, the character’s speaking identity must be called out.</p>
+<div class="list-item">The name is centered, written in ALL CAPS, and positioned at the 3.7" to 4.1" margin.</div>
+<div class="list-item">Character names must remain entirely consistent throughout the script to avoid confusing the breakdown services.<sup><a href="#fn4">4</a></sup></div>
+
+<p><strong>Extensions:</strong> Placed directly adjacent to the character name in parentheses<sup><a href="#fn3">3</a></sup>:</p>
+<div class="list-item">(V.O.) for Voice-Over (narration, thoughts, radio voices, or telephone speakers on the other end of a call).</div>
+<div class="list-item">(O.S.) for Off-Screen (when a character is physically present in the scene's location but is speaking from outside the camera's visual frame).</div>
+<div class="list-item">(CONT'D) when a character’s dialogue block is briefly interrupted by an action line and then continues.</div>
+<h3>D. Parentheticals (Wrylies)</h3>
+<p>These are short, lowercase directions enclosed in parentheses, placed directly beneath the Character Cue and before their dialogue, or inside a dialogue block.</p>
+<div class="list-item">Indented at 3.1" left and 3.1" right.<sup><a href="#fn3">3</a></sup></div>
+<div class="list-item">Used sparingly and only to clarify the tone or emotional delivery when the text itself could be misread (e.g., (sarcastic) or (whispering)).
+    <ul style="margin-top: 5px; color: var(--text-secondary);">
+        <li>They should not be used to micromanage actor movements.</li>
+    </ul>
+</div>
+
+<div class="example">         LIAM 
+    (whispering) 
+    We don't have much time.</div>
+
+<h3>E. Dialogue</h3>
+<p>The actual spoken lines of a character.</p>
+<div class="list-item">Formatted in sentence case.<sup><a href="#fn1">1</a></sup></div>
+<div class="list-item">Indented to a left margin of 2.5" to 2.7" and a right margin of 1.5" to 2.4".<sup><a href="#fn3">3</a></sup></div>
+<div class="list-item">If a line trails off, use an ellipsis (...). If a line is abruptly cut off, end the speech with a double-hyphen (--).</div>
+
+<h3>F. Transitions</h3>
+<p>Editing directions indicating how to transition between scenes, positioned flush to the right margin at the 6.0" mark.<sup><a href="#fn3">3</a></sup></p>
+<div class="list-item">Written in ALL CAPS and end with a colon (e.g., CUT TO:, DISSOLVE TO:, SMASH TO:).</div>
+<div class="list-item">In spec scripts, transitions are kept to an absolute minimum or omitted entirely, as editing styles are determined in post-production.</div>
+
+<h2>4. Contextualizing the Shot Element within Narrative Blueprinting</h2>
+<p>A shot heading is a formatting device designed to alter the focal point of the reader's eye within an already established scene.<sup><a href="#fn8">8</a></sup></p>
+<p>While a Scene Heading changes the physical space or time, a Shot Heading changes the physical framing or camera perspective within that same location.<sup><a href="#fn11">11</a></sup></p>
+
+<h3>Rules of Shot Headings</h3>
+<div class="list-item"><strong>Margins:</strong> Formatted flush left (or aligned to 1.7" left margin).</div>
+<div class="list-item"><strong>Casing:</strong> Written in ALL CAPS.<sup><a href="#fn4">4</a></sup></div>
+<div class="list-item"><strong>Spacing:</strong> Preceded by a blank line and followed by a blank line. (Note: Some classic manuals like SimplyScripts mention two blank lines preceding a shot, but a single blank line is standard in contemporary software).<sup><a href="#fn8">8</a></sup></div>
+
+<h3>Common Shot Heading Types<sup><a href="#fn8">8</a></sup>:</h3>
+<div class="list-item"><strong>ANGLE ON --</strong> <sup><a href="#fn8">8</a></sup></div>
+<div class="list-item"><strong>EXTREME CLOSE UP ON --</strong> <sup><a href="#fn8">8</a></sup></div>
+<div class="list-item"><strong>WIDER ANGLE --</strong> <sup><a href="#fn12">12</a></sup></div>
+<div class="list-item"><strong>REVERSE ANGLE --</strong> <sup><a href="#fn8">8</a></sup></div>
+<div class="list-item"><strong>INSERT --</strong> (specifically used to draw attention to small details, text, or props that must be legible to the audience).<sup><a href="#fn8">8</a></sup></div>
+<h2>5. Special Formatting Situations</h2>
+<p>Many narrative scenarios require complex structures beyond basic dialogue.</p>
+<p>The American Screenwriting Standard outlines precise protocols for telephone calls, text messages, flashbacks, and montages.</p>
+
+<h3>A. Telephone Conversations</h3>
+<p>There are three industry-approved methods to format telephone exchanges:</p>
+
+<h4>Method 1: One-Sided Call (Only One Character Seen and Heard)</h4>
+<p>Treat the scene like normal dialogue. The pauses where the other character speaks are indicated by physical action lines, avoiding repetitive "beat" parentheticals.</p>
+
+<div class="example">INT. KITCHEN - DAY  
+
+Clara frantically scrubs the blood-soaked tile. The phone RINGS. She answers it.
+
+    CLARA
+  Hello?
+ (listening)
+  No, this is she. Who is this?
+
+Clara stops scrubbing, her posture stiffening.
+
+    CLARA (CONT'D)
+  You're lying. He's at work.</div>
+
+<h4>Method 2: Two-Sided Call with Voice-Over (One Character Seen, Both Heard)</h4>
+<p>The character on the other end is heard but not physically seen. Their Character Cue must utilize the (V.O.) extension to represent the electronic transmission of their voice.</p>
+
+<div class="example">INT. KITCHEN - DAY 
+
+Clara answers the ringing phone.
+
+    CLARA
+  Hello?
+
+    SHADOWY FIGURE (V.O.)
+  Clara. I have your husband.</div>
+
+<h4>Method 3: Intercut Call (Both Characters Seen and Heard)</h4>
+<p>To show both characters in their respective locations cutting back and forth, establish both locations first, then insert an INTERCUT command.</p>
+<p>This allows the writer to list the dialogue continuously without writing new scene headings for every single line.</p>
+
+<div class="example">INT. CLARA'S KITCHEN - DAY 
+
+Clara answers the ringing phone.
+
+    CLARA
+  Hello?
+
+INT. WALL STREET OFFICE - SAME TIME 
+
+A SHADOWY FIGURE sits behind a mahogany desk, holding the receiver.
+
+    SHADOWY FIGURE
+  Is Clara Evans available?
+
+INTERCUT - PHONE CONVERSATION
+
+    CLARA
+  This is she.</div>
+<h3>B. Text Messaging</h3>
+<p>Because texting is silent, formatting it as spoken dialogue can confuse the actor or sound department.</p>
+<p>The industry utilizes three main formatting approaches:</p>
+
+<h4>Method 1: Within Action Description (Best for Quick, Single Texts)</h4>
+<p>Describe the character looking at the screen and quote the text directly in the action line.</p>
+
+<div class="example">Erik pulls out his phone. 
+
+A new text from "Wife" reads: "Pick up milk."
+
+Erik sighs and pockets the phone.</div>
+
+<h4>Method 2: Insert Shot (Best for Crucial Visual Reveals)</h4>
+<p>If the precise wording of a text is a major plot point, use an INSERT shot to force the reader to see the screen.</p>
+
+<div class="example">INT. ERIK'S OFFICE - DAY 
+
+Erik's phone vibrates on the desk. He looks at it.
+
+INSERT PHONE SCREEN 
+
+Incoming call from "WIFE." 
+
+BACK TO SCENE 
+
+Erik silences the call and returns to typing.</div>
+
+<h4>Method 3: Dialogue Formatting with (TEXT) Extension (Best for Back-and-Forth Conversations)</h4>
+<p>Format the texts like spoken lines but append the (TEXT) extension next to the character cue.</p>
+
+<div class="example">INT. ERIK'S OFFICE - DAY 
+
+Erik types rapidly on his phone.
+
+    ERIK (TEXT)
+  I'll be late tonight, sorry!
+
+    WIFE (TEXT)
+  Again? Dinner is cold.</div>
+<h3>C. Flashbacks</h3>
+<p>Flashbacks must be formatted so that the production crew knows exactly when the story moves in and out of the timeline.</p>
+
+<h4>Method 1: Integrated Scene Heading Modifier (Best for Full-Scene Flashbacks)</h4>
+<p>Append - FLASHBACK directly to the end of the Scene Heading. The returning scene must append - BACK TO PRESENT DAY or - PRESENT DAY.</p>
+
+<div class="example">EXT. TRAIN TRACKS - DAY - FLASHBACK 
+
+A ten-year-old Barry sprints along the tracks, laughing. 
+
+INT. Barry's OFFICE - NIGHT - BACK TO PRESENT DAY 
+
+The adult Barry (40s) stares out the window at the rainy city skyline.</div>
+
+<h4>Method 2: Subheading Indicators (Best for Flashbacks within a Scene)</h4>
+<p>Insert BEGIN FLASHBACK and END FLASHBACK as distinct subheadings.</p>
+
+<div class="example">INT. Barry's OFFICE - NIGHT 
+
+Barry stares at a framed photograph of a steam engine. 
+
+BEGIN FLASHBACK: 
+
+Ten-year-old Barry stands on a platform as a massive train roars past. 
+
+END FLASHBACK
+
+Barry wipes a tear from his cheek and sits at his desk.</div>
+<h3>D. Montages</h3>
+<p>A montage is a series of rapid, thematic visual fragments spanning multiple locations or times.</p>
+<div class="list-item">Begin with a capitalized subheading: MONTAGE -.</div>
+<div class="list-item">List each brief visual snippet on a separate line, typically using double-hyphens (--).</div>
+<div class="list-item">Conclude with a returning subheading: END MONTAGE or BACK TO SCENE.</div>
+
+<div class="example">MONTAGE - LIAM ELUDES THE POLICE 
+
+-- Liam ducks into a narrow, trash-filled alleyway. 
+-- He sprints across a crowded subway platform, blending into the crowd. 
+-- In a public restroom, he dyes his hair brown in the sink. 
+
+END MONTAGE</div>
+
+<h2>6. The Revision and Production Process: Spec Scripts vs. Production Drafts</h2>
+<p>Understanding the distinction between a Spec Script and a Production Draft (Shooting Script) is critical to professional industry survival.</p>
+
+<h3>Spec Scripts: The Story Catalyst</h3>
+<p>A "spec" script is written on speculation (uncommissioned and unsold). Its primary audience is the Script Reader, Producer, and Talent Agent.<sup><a href="#fn5">5</a></sup></p>
+
+<div class="list-item">Focuses entirely on pacing, narrative flow, character development, and readability.<sup><a href="#fn15">15</a></sup></div>
+<div class="list-item">OMITS scene numbers.<sup><a href="#fn16">16</a></sup></div>
+<div class="list-item">AVOIDS technical camera directions (e.g., PAN TO, TRACKING SHOT, CRANE UP).
+    <ul style="margin-top: 5px; color: var(--text-secondary);">
+        <li>Writing camera directions "directs from the page" and is considered an intrusion upon the director's creative authority.<sup><a href="#fn17">17</a></sup></li>
+    </ul>
+</div>
+
+<h3>Production Drafts: The Technical Blueprint</h3>
+<p>Once a script is purchased and budgeted, it transitions into a Shooting Script.<sup><a href="#fn14">14</a></sup></p>
+<p>It is now a technical scheduling document used by the Director, Assistant Directors, Cinematographer, and Crew.<sup><a href="#fn15">15</a></sup></p>
+
+<div class="list-item">Scene numbers are added to both the left and right margins.</div>
+<div class="list-item">Scene numbers on the left are aligned at 0.75" to 1.0", while the right number is placed at 7.4" (or 1.0" from the right edge).<sup><a href="#fn3">3</a></sup></div>
+<div class="list-item">Camera and editing directions are added to guide visual setups.<sup><a href="#fn15">15</a></sup></div>
+
+<h3>Revisions and Scene Management Rules</h3>
+<p>During production, revisions are made to locked scripts. To prevent the entire shooting schedule from breaking, page numbers and scene numbers cannot simply be reordered.</p>
+<p>Instead, the industry uses specific mathematical scene indicators:</p>
+
+<div class="list-item"><strong>1. Inserting a Scene:</strong> If a new scene is added between Scene 10 and Scene 11, the new scene is labeled with a letter suffix: 10B.
+    <ul style="margin-top: 5px; color: var(--text-secondary);">
+        <li>Further additions in that same slot become 10C, 10D, etc..</li>
+        <li>Note that letters are never prefixed (e.g., I8 is unacceptable).</li>
+    </ul>
+</div>
+
+<div class="list-item"><strong>2. Moving a Scene:</strong> If Scene 44 is moved between Scenes 39 and 40, Scene 44 is given the new number 39B.
+    <ul style="margin-top: 5px; color: var(--text-secondary);">
+        <li>At its original location (Scene 44), the heading is kept to lock the numbering but is renamed: 44. SCENE OMITTED - moved to 39B.</li>
+    </ul>
+</div>
+
+<div class="list-item"><strong>3. Deleting (Omit) a Scene:</strong>
+    <ul style="margin-top: 5px; color: var(--text-secondary);">
+        <li>To delete a scene entirely without throwing off the downstream numbering, the original scene number is preserved.</li>
+        <li>The body text is deleted and the slugline is updated to read: 44. SCENE OMITTED.</li>
+    </ul>
+</div>
+
+<p>By adhering to these standard layouts, a screenwriter demonstrates professional competence, ensuring their work is readable, schedulable, and ready for production.</p>
+<h2>Works cited</h2>
+<p id="fn1">1.​ Screenplay - Wikipedia, accessed May 29, 2026, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p><a href="https://en.wikipedia.org/wiki/Screenplay" target="_blank">https://en.wikipedia.org/wiki/Screenplay</a> </p>
+<p id="fn2">2.​ Scriptwriting Format [pdf] - San Jose State University, accessed May 29, 2026, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p><a href="https://www.sjsu.edu/writingcenter/docs/handouts/Scriptwriting%20Format.pdf" target="_blank">https://www.sjsu.edu/writingcenter/docs/handouts/Scriptwriting%20Format.pdf</a> </p>
+<p id="fn3">3.​ Screenplay Margins Explained — A Guide for Screenwriters - StudioBinder, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p>accessed May 29, 2026, <a href="https://www.studiobinder.com/blog/screenplay-margins/" target="_blank">https://www.studiobinder.com/blog/screenplay-margins/</a> </p>
+<p id="fn4">4.​ The Hollywood Standard Chapter Summary | Christopher Riley - Bookey, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p>accessed May 29, 2026, <a href="https://www.bookey.app/book/the-hollywood-standard" target="_blank">https://www.bookey.app/book/the-hollywood-standard</a> </p>
+<p id="fn5">5.​ The Hollywood Standard PDF | PDF | Screenplay | Screenwriting - Scribd, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p>accessed May 29, 2026, 
+<a href="https://www.scribd.com/document/992045164/The-Hollywood-Standard-PDF" target="_blank">https://www.scribd.com/document/992045164/The-Hollywood-Standard-PDF</a> </p>
+<p id="fn6">6.​ Script Formatting - SimplyScripts, accessed May 29, 2026, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p><a href="https://www.simplyscripts.com/WR_format.html" target="_blank">https://www.simplyscripts.com/WR_format.html</a> </p>
+<p id="fn7">7.​ accessed May 29, 2026, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p><a href="https://www.scribd.com/document/992045164/The-Hollywood-Standard-PDF#:~:text=Shot%20headings%2Fdirections%3A%20Left%20margin,%22%2C%2057%20character%20line%20length." target="_blank">https://www.scribd.com/document/992045164/The-Hollywood-Standard-PDF#:~:text=Shot%20headings%2Fdirections%3A%20Left%20margin,%22%2C%2057%20character%20line%20length.</a></p>
+<p id="fn8">8.​ Shots - Screenwriting.info, accessed May 29, 2026, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p><a href="https://www.screenwriting.info/shots" target="_blank">https://www.screenwriting.info/shots</a> </p>
+<p id="fn9">9.​ Screenplay Format Mastery | Ultimate Writers Guide - StudioBinder, accessed <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p>May 29, 2026, 
+<a href="https://www.studiobinder.com/blog/brilliant-script-screenplay-format/" target="_blank">https://www.studiobinder.com/blog/brilliant-script-screenplay-format/</a> </p>
+<p id="fn10">10.​How to Format a Screenplay | Final Draft®, accessed May 29, 2026, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p><a href="https://www.finaldraft.com/learn/how-to-format-a-screenplay/" target="_blank">https://www.finaldraft.com/learn/how-to-format-a-screenplay/</a> </p>
+<p id="fn11">11.​How To Use Shot Headings In Your Screenplay - Movie Outline, accessed May 29, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p>2026, 
+<a href="https://www.movieoutline.com/articles/how-to-use-shot-headings-in-your-scree" target="_blank">https://www.movieoutline.com/articles/how-to-use-shot-headings-in-your-scree</a>
+nplay.html </p>
+<p id="fn12">12.​Shot Headings: Shot Types | How To Write a Screenplay, accessed May 29, 2026, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p><a href="https://screenplayhowto.com/screenplay-blog/shot-headings-shot-types/" target="_blank">https://screenplayhowto.com/screenplay-blog/shot-headings-shot-types/</a> </p>
+<p id="fn13">13.​Insert shots - Erik Bork, accessed May 29, 2026, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p><a href="https://www.flyingwrestler.com/2023/09/insert-shots/" target="_blank">https://www.flyingwrestler.com/2023/09/insert-shots/</a> </p>
+<p id="fn14">14.​1.3: Spec Script VS Shooting Script - Humanities LibreTexts, accessed May 29, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p>2026, 
+<a href="https://human.libretexts.org/Courses/Chabot_College/FILM_12%3A_Screenwriting_and_Visual_Storytelling/01%3A_Basics_of_Screenplay_Formatting/1.03%3A_Spec_Script_VS_Shooting_Script" target="_blank">https://human.libretexts.org/Courses/Chabot_College/FILM_12%3A_Screenwriting_and_Visual_Storytelling/01%3A_Basics_of_Screenplay_Formatting/1.03%3A_Spec_Script_VS_Shooting_Script</a></p>
+<p id="fn15">15.​What is a Shooting Script (and is it Different than a Spec Script)? - Celtx Blog, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p>accessed May 29, 2026, <a href="https://blog.celtx.com/shooting-script/" target="_blank">https://blog.celtx.com/shooting-script/</a> </p>
+<p id="fn16">16.​Spec Script vs Shooting Script: What&#x27;s the Difference? - Tony Folden, accessed <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p>May 29, 2026, 
+<a href="https://tonyfolden.wordpress.com/2015/02/23/spec-script-vs-shooting-script-whats-the-difference/" target="_blank">https://tonyfolden.wordpress.com/2015/02/23/spec-script-vs-shooting-script-whats-the-difference/</a></p>
+<p id="fn17">17.​How to Write Camera Directions in a Script — Tips &amp; Techniques - StudioBinder, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p>accessed May 29, 2026, 
+<a href="https://www.studiobinder.com/blog/how-to-write-camera-directions-in-a-script/" target="_blank">https://www.studiobinder.com/blog/how-to-write-camera-directions-in-a-script/</a> </p>
+<p id="fn18">18.​Screenwriting Basics: When to (And Not To) Write Camera ..., accessed May 29, <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p>2026,</p>
+<p><a href="https://www.finaldraft.com/blog/when-to-and-not-to-write-camera-directions" target="_blank">https://www.finaldraft.com/blog/when-to-and-not-to-write-camera-directions</a> </p>
+<p id="fn19">19.​Why you should avoid Camera Directions in your Screenplay | The Script <a href="javascript:history.back()" title="Return to text" style="font-size: 0.9rem; color: var(--accent); text-decoration: none; margin-left: 8px;">[↩ Back]</a></p>
+<p>Department #shorts - YouTube, accessed May 29, 2026, 
+<a href="https://www.youtube.com/shorts/OOLCBcmDLcE" target="_blank">https://www.youtube.com/shorts/OOLCBcmDLcE</a></p>
+
+    </div>
+</body>
+</html>
