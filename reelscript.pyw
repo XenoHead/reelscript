@@ -269,11 +269,12 @@ print(file)
 
     def open_manual(self):
         try:
+            import pathlib
             # First look in current_dir (where the resources reside)
             manual_path = os.path.join(current_dir, "manual.html")
             if os.path.exists(manual_path):
                 import webview
-                webview.create_window('ReelScript Manual', url=manual_path, js_api=self, width=1024, height=768, text_select=True)
+                webview.create_window('ReelScript Manual', url=pathlib.Path(manual_path).as_uri(), js_api=self, width=1024, height=768, text_select=True)
                 return True
                 
             # Fallback to run directory
@@ -284,7 +285,7 @@ print(file)
             manual_path = os.path.join(run_dir, "manual.html")
             if os.path.exists(manual_path):
                 import webview
-                webview.create_window('ReelScript Manual', url=manual_path, js_api=self, width=1024, height=768, text_select=True)
+                webview.create_window('ReelScript Manual', url=pathlib.Path(manual_path).as_uri(), js_api=self, width=1024, height=768, text_select=True)
                 return True
         except Exception:
             pass
@@ -292,6 +293,7 @@ print(file)
 
     def open_writers_guide(self):
         try:
+            import pathlib
             if getattr(sys, 'frozen', False):
                 run_dir = os.path.dirname(sys.executable)
             else:
@@ -301,7 +303,7 @@ print(file)
             guide_path = os.path.join(run_dir, "writers_guide.html")
             if os.path.exists(guide_path):
                 import webview
-                webview.create_window("Screenplay Writer's Guide", url=guide_path, js_api=self, width=1024, height=768, text_select=True)
+                webview.create_window("Screenplay Writer's Guide", url=pathlib.Path(guide_path).as_uri(), js_api=self, width=1024, height=768, text_select=True)
                 return True
                 
             # 2. Try MEIPASS (one-file execution without installer)
@@ -309,14 +311,14 @@ print(file)
                 guide_path = os.path.join(sys._MEIPASS, "writers_guide.html")
                 if os.path.exists(guide_path):
                     import webview
-                    webview.create_window("Screenplay Writer's Guide", url=guide_path, js_api=self, width=1024, height=768, text_select=True)
+                    webview.create_window("Screenplay Writer's Guide", url=pathlib.Path(guide_path).as_uri(), js_api=self, width=1024, height=768, text_select=True)
                     return True
                     
             # 3. Fallback to current_dir
             guide_path = os.path.join(current_dir, "writers_guide.html")
             if os.path.exists(guide_path):
                 import webview
-                webview.create_window("Screenplay Writer's Guide", url=guide_path, js_api=self, width=1024, height=768, text_select=True)
+                webview.create_window("Screenplay Writer's Guide", url=pathlib.Path(guide_path).as_uri(), js_api=self, width=1024, height=768, text_select=True)
                 return True
                 
         except Exception as e:
