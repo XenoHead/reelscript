@@ -5221,24 +5221,26 @@ function renderCharSheetList() {
         return 0;
     });
     
+    const isCompact = document.getElementById('char-sheet-compact-toggle') ? document.getElementById('char-sheet-compact-toggle').checked : false;
+    
     chars.forEach(char => {
         const charEl = document.createElement('div');
         charEl.style.background = '#1a222c';
         charEl.style.border = '1px solid #36424e';
         charEl.style.borderRadius = '6px';
-        charEl.style.padding = '15px';
+        charEl.style.padding = isCompact ? '8px' : '15px';
         
         const header = document.createElement('div');
         header.style.display = 'flex';
         header.style.justifyContent = 'space-between';
         header.style.alignItems = 'center';
-        header.style.marginBottom = '10px';
+        header.style.marginBottom = isCompact ? '5px' : '10px';
         
         const titleArea = document.createElement('div');
         const nameTitle = document.createElement('h4');
-        nameTitle.style.margin = '0 0 5px 0';
+        nameTitle.style.margin = '0 0 2px 0';
         nameTitle.style.color = '#f8fafc';
-        nameTitle.style.fontSize = '16px';
+        nameTitle.style.fontSize = isCompact ? '14px' : '16px';
         nameTitle.textContent = char.name;
         
         const statsStr = `Scenes: ${char.scenes ? char.scenes.length : 0} | Lines: ${char.dialogueCount || 0}`;
@@ -5253,6 +5255,24 @@ function renderCharSheetList() {
         const actions = document.createElement('div');
         actions.style.display = 'flex';
         actions.style.gap = '5px';
+        
+        const btnSave = document.createElement('button');
+        btnSave.textContent = 'Save';
+        btnSave.className = 'modal-btn';
+        btnSave.style.padding = '4px 8px';
+        btnSave.style.fontSize = '11px';
+        btnSave.style.background = '#10b981';
+        btnSave.onclick = () => {
+            char.notes = textArea.value;
+            appSettings.characterNotes = appSettings.characterNotes || {};
+            appSettings.characterNotes[char.name] = textArea.value;
+            saveCharSheetData();
+            if (window.pywebview) {
+                window.pywebview.api.update_character_note(char.name, textArea.value);
+            }
+            btnSave.textContent = 'Saved!';
+            setTimeout(() => btnSave.textContent = 'Save', 1500);
+        };
         
         const btnGrp = document.createElement('button');
         btnGrp.textContent = 'Group';
@@ -5309,6 +5329,7 @@ function renderCharSheetList() {
             }
         };
         
+        actions.appendChild(btnSave);
         actions.appendChild(btnGrp);
         actions.appendChild(btnRename);
         actions.appendChild(btnDel);
@@ -5318,12 +5339,12 @@ function renderCharSheetList() {
         
         const textArea = document.createElement('textarea');
         textArea.style.width = '100%';
-        textArea.style.minHeight = '100px';
+        textArea.style.minHeight = isCompact ? '40px' : '100px';
         textArea.style.background = '#0f1523';
         textArea.style.color = '#e2e8f0';
         textArea.style.border = '1px solid #36424e';
         textArea.style.borderRadius = '4px';
-        textArea.style.padding = '10px';
+        textArea.style.padding = isCompact ? '6px' : '10px';
         textArea.style.resize = 'vertical';
         textArea.style.outline = 'none';
         textArea.style.fontFamily = 'Inter, sans-serif';
@@ -5361,6 +5382,9 @@ if (btnCharSheetSortDir) {
 }
 if (charSheetSort) {
     charSheetSort.addEventListener('change', renderCharSheetList);
+}
+if (document.getElementById('char-sheet-compact-toggle')) {
+    document.getElementById('char-sheet-compact-toggle').addEventListener('change', renderCharSheetList);
 }
 if (btnAddCharacter) {
     btnAddCharacter.addEventListener('click', () => {
