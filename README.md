@@ -4,7 +4,7 @@
 
 > **Current Version:** 2.8.0 &nbsp;|&nbsp; **Last Updated:** June 2, 2026
 
-![ReelScript Screenshot](./screen.png)
+![ReelScript Screenshot](./screenshot.png)
 
 ---
 
