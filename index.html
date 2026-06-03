@@ -342,7 +342,8 @@
     <!-- Backup Configuration Modal -->
     <div id="backup-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="width: 550px;">
-            <h2>💽 Manage Backups & Auto-Save</h2>
+            <h2>💽 Manage Backups & Auto-Save <span title="Backups are physical .rsp files automatically saved to your hard drive or cloud. They act as your safety net against computer crashes." style="cursor:help; font-size:14px; opacity:0.7;">❔</span></h2>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px; margin-top: 5px;">Automatically save hard copies of your project to your computer or cloud drive.</p>
             
             <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                 <div class="backup-option" style="flex: 1; margin-bottom: 0;">
@@ -580,8 +581,8 @@
     <!-- Snapshots Modal -->
     <div id="snapshots-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="width: 500px;">
-            <h2>📸 Manage Snapshots</h2>
-            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">Save the current state of your entire project to roll back to later.</p>
+            <h2>📸 Manage Snapshots <span title="Snapshots are instant, manual save-states stored internally inside ReelScript. They act as your 'Undo' points for rapid experimentation within a single editing session." style="cursor:help; font-size:14px; opacity:0.7;">❔</span></h2>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px; margin-top: 5px;">Save the current state of your entire project to instantly roll back to later without messing with files.</p>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                 <input type="text" id="snapshot-name-input" placeholder="e.g., Sister's Edits V1" style="flex:1; background: #1a232c; border: 1px solid #36424e; color: white; padding: 6px 10px; border-radius: 4px; font-size: 12px; outline: none;">
                 <button id="btn-create-snapshot" class="modal-btn" style="background-color: #10b981;">Create Snapshot</button>
