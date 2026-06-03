@@ -5741,8 +5741,8 @@ const miniTextColorBtn = document.getElementById('mini-text-color');
 
 if (textColorMenu && textColorDropdownContent && customTextColorPicker && miniTextColorBtn) {
     textColorMenu.addEventListener('click', (e) => {
-        // Only populate if it's opening
-        if (!textColorMenu.classList.contains('open')) {
+        // Populate when it opens (the class will already be toggled by the global listener)
+        if (textColorMenu.classList.contains('open')) {
             populateTextColorMenu();
         }
         // The global dropdown click listener handles opening/closing and e.stopPropagation
