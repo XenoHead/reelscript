@@ -1,16 +1,7 @@
 {
-    "version": "2.9.7",
+    "version": "4.0.0",
     "last_updated": "2026-06-04",
     "changelog": [
-        "- Implemented opt-in Auto-Save toggle checkbox in Manage Backups modal",
-        "- Added 'Auto-Save Disabled' status dot (gray indicator) to sync badge",
-        "- Protected startup redirection from cloud files to local copies without auto-generating disk files",
-        "- Fixed AI Script Analysis crash issues and bottom panel report spacing constraints",
-        "- Refactored Developer Hub to deploy release assets directly to GitHub instead of Google Drive",
-        "- Added secure, password-masked GitHub PAT configuration in Developer Hub",
-        "- Implemented 'Git Push Code Only' to sync repository source code changes",
-        "- Restricted Release deployments to only stage and push version.json and installer binaries",
-        "- Added live Git subprocess log streaming to the Developer Hub terminal GUI",
-        "- Added Character List interface for current and new Characters"
+        "Bug fixes"
     ]
 }
