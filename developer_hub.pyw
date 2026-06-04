@@ -83,6 +83,37 @@ class DeveloperHubApp:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save version.json: {str(e)}")
 
+    def get_installed_version(self):
+        installed_version = "Not Installed"
+        install_path = None
+        try:
+            import winreg
+            try:
+                key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"Software\XenoHead\ReelScript", 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY)
+            except OSError:
+                key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"Software\XenoHead\ReelScript", 0, winreg.KEY_READ | winreg.KEY_WOW64_32KEY)
+            
+            install_path, _ = winreg.QueryValueEx(key, "InstallPath")
+            winreg.CloseKey(key)
+        except Exception:
+            # Fallback to default paths
+            for p in [r"C:\Program Files\ReelScript", r"C:\Program Files (x86)\ReelScript", r"C:\ReelScript"]:
+                if os.path.exists(os.path.join(p, "ReelScript.exe")) or os.path.exists(os.path.join(p, "reelscript.exe")):
+                    install_path = p
+                    break
+        
+        if install_path and os.path.exists(os.path.join(install_path, "version.json")):
+            try:
+                with open(os.path.join(install_path, "version.json"), "r", encoding="utf-8") as f:
+                    vdata = json.load(f)
+                    installed_version = f"v{vdata.get('version', 'Unknown')} ({install_path})"
+            except Exception:
+                installed_version = f"Error reading version.json at {install_path}"
+        elif install_path:
+            installed_version = f"Unknown Version ({install_path})"
+            
+        return installed_version
+
     def load_github_token(self):
         if os.path.exists(settings_file):
             try:
@@ -228,6 +259,16 @@ class DeveloperHubApp:
 
         self.btn_major = tk.Button(self.ver_frame, text="+1.0 (Major)", font=("Segoe UI", 8), bg=self.colors["bg_dark"], fg=self.colors["accent_blue"], activebackground=self.colors["accent_blue"], activeforeground="white", bd=0, padx=6, pady=2, cursor="hand2", command=lambda: self.increment_version(1, 0, 0))
         self.btn_major.pack(side=tk.LEFT, padx=3)
+
+        # Installed Version Row
+        self.inst_ver_frame = tk.Frame(self.card, bg=self.colors["card_bg"])
+        self.inst_ver_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        self.inst_ver_title = tk.Label(self.inst_ver_frame, text="Locally Installed:", font=("Segoe UI", 9, "bold"), bg=self.colors["card_bg"], fg=self.colors["text_muted"])
+        self.inst_ver_title.pack(side=tk.LEFT, padx=(0, 5))
+        
+        self.inst_ver_label = tk.Label(self.inst_ver_frame, text=self.get_installed_version(), font=("Segoe UI", 9, "italic"), bg=self.colors["card_bg"], fg=self.colors["accent_amber"])
+        self.inst_ver_label.pack(side=tk.LEFT)
 
         # Changelog area
         self.change_label = tk.Label(self.card, text="Changelog Updates (One point per line):", font=("Segoe UI", 10), bg=self.colors["card_bg"], fg=self.colors["text_light"])
@@ -572,6 +613,14 @@ class DeveloperHubApp:
         else:
             messagebox.showerror("Error", "Version cannot be empty!")
 
+    def _enable_buttons(self):
+        try:
+            self.btn_build.configure(state=tk.NORMAL, bg="#27313c")
+            self.btn_push_code.configure(state=tk.NORMAL, bg=self.colors["accent_blue"])
+            self.btn_deploy.configure(state=tk.NORMAL, bg=self.colors["accent_green"])
+        except Exception as e:
+            self.log(f"Error re-enabling buttons: {e}")
+
     def start_build(self):
         self.save_and_update_silent()
         # Disable buttons during active operation to prevent collisions
@@ -626,9 +675,7 @@ class DeveloperHubApp:
             self.root.after(0, lambda: self.log(f"❌ Subprocess Exception: {str(e)}"))
         finally:
             # Re-enable interactive buttons on main thread
-            self.root.after(0, lambda: self.btn_build.configure(state=tk.NORMAL, bg="#27313c"))
-            self.root.after(0, lambda: self.btn_push_code.configure(state=tk.NORMAL, bg=self.colors["accent_blue"]))
-            self.root.after(0, lambda: self.btn_deploy.configure(state=tk.NORMAL, bg=self.colors["accent_green"]))
+            self.root.after(0, self._enable_buttons)
 
     def run_git_cmd(self, args):
         creationflags = 0
@@ -711,9 +758,7 @@ class DeveloperHubApp:
             self.root.after(0, lambda: self.log(f"❌ Push Exception: {str(e)}"))
             self.root.after(0, lambda: messagebox.showerror("Push Failed", f"An error occurred during push: {str(e)}"))
         finally:
-            self.root.after(0, lambda: self.btn_build.configure(state=tk.NORMAL, bg="#27313c"))
-            self.root.after(0, lambda: self.btn_push_code.configure(state=tk.NORMAL, bg=self.colors["accent_blue"]))
-            self.root.after(0, lambda: self.btn_deploy.configure(state=tk.NORMAL, bg=self.colors["accent_green"]))
+            self.root.after(0, self._enable_buttons)
 
     def push_to_github(self):
         self.save_and_update_silent()
@@ -907,9 +952,7 @@ class DeveloperHubApp:
             self.root.after(0, lambda: self.log(f"❌ Push Exception: {str(e)}"))
             self.root.after(0, lambda: messagebox.showerror("Push Failed", f"An error occurred during push: {str(e)}"))
         finally:
-            self.root.after(0, lambda: self.btn_build.configure(state=tk.NORMAL, bg="#27313c"))
-            self.root.after(0, lambda: self.btn_push_code.configure(state=tk.NORMAL, bg=self.colors["accent_blue"]))
-            self.root.after(0, lambda: self.btn_deploy.configure(state=tk.NORMAL, bg=self.colors["accent_green"]))
+            self.root.after(0, self._enable_buttons)
 
 if __name__ == "__main__":
     root = tk.Tk()

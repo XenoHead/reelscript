@@ -872,13 +872,9 @@ window.addEventListener('pywebviewready', async () => {
                         `Your version: ${check.local_version}\n` +
                         `Latest version: ${check.remote_version}\n\n` +
                         `What's new:\n` + (check.changelog || []).map(c => `• ${c}`).join('\n') + `\n\n` +
-                        `Visit GitHub to download the latest release?`;
+                        `Download and install the latest release?`;
                     if (confirm(msg)) {
-                        if (window.pywebview) {
-                            window.pywebview.api.open_url('https://github.com/XENOHEAD/reelscript/releases');
-                        } else {
-                            window.open('https://github.com/XENOHEAD/reelscript/releases', '_blank');
-                        }
+                        downloadAndInstallUpdate(btnUpdate);
                     }
                 });
             }
@@ -889,6 +885,40 @@ window.addEventListener('pywebviewready', async () => {
 
     initApp();
 });
+
+// Helper for automatic update downloads
+function downloadAndInstallUpdate(btnElement) {
+    if (btnElement) {
+        btnElement.innerText = "Downloading Update...";
+        btnElement.disabled = true;
+        btnElement.style.opacity = "0.7";
+        btnElement.style.cursor = "wait";
+    }
+    
+    if (window.pywebview) {
+        window.pywebview.api.download_and_install_github_update().then(result => {
+            if (result.error) {
+                alert("Failed to start update: " + result.error);
+                if (btnElement) {
+                    btnElement.innerText = "Update";
+                    btnElement.disabled = false;
+                    btnElement.style.opacity = "1";
+                    btnElement.style.cursor = "pointer";
+                }
+            } else {
+                if (btnElement) btnElement.innerText = "Installing...";
+            }
+        });
+    } else {
+        window.open('https://github.com/XENOHEAD/reelscript/releases', '_blank');
+        if (btnElement) {
+            btnElement.innerText = "Update";
+            btnElement.disabled = false;
+            btnElement.style.opacity = "1";
+            btnElement.style.cursor = "pointer";
+        }
+    }
+}
 
 window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
@@ -3498,6 +3528,7 @@ if (menuCheckGithubUpdates) {
 
             if (result.error) {
                 bodyDiv.innerHTML = `<p style="color: #ef4444; font-size: 13px;">⚠️ Could not reach GitHub: ${result.error}</p><p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Check your internet connection and try again.</p>`;
+                document.getElementById('btn-close-github-update').textContent = 'Close';
             } else if (result.update_available) {
                 const changelogHtml = result.changelog && result.changelog.length
                     ? `<ul style="margin: 10px 0 0 0; padding-left: 18px; font-size: 12px; color: var(--text-muted);">` +
@@ -3507,18 +3538,19 @@ if (menuCheckGithubUpdates) {
                 bodyDiv.innerHTML = `
                     <div style="background: #0d1b2a; border: 1px solid #1b8adb; border-radius: 6px; padding: 14px; margin-bottom: 12px;">
                         <p style="font-size: 14px; font-weight: bold; color: #10b981; margin: 0 0 6px 0;">✅ Update Available!</p>
-                        <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Your version: <strong style="color:white;">${result.local_version}</strong> &nbsp;→&nbsp; Latest: <strong style="color: #10b981;">${result.remote_version}</strong></p>
+                        <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Current version: <strong style="color:white;">${result.local_version}</strong> &nbsp;→&nbsp; Version on GitHub: <strong style="color: #10b981;">${result.remote_version}</strong></p>
                         ${result.last_updated ? `<p style="font-size: 11px; color: var(--text-muted); margin: 4px 0 0 0;">Released: ${result.last_updated}</p>` : ''}
                     </div>
                     ${changelogHtml ? `<p style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">What's new:</p>${changelogHtml}` : ''}`;
                 githubBtn.style.display = 'block';
+                document.getElementById('btn-close-github-update').textContent = 'Cancel';
             } else {
                 bodyDiv.innerHTML = `
                     <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 24px; margin: 0;">✅</p>
-                        <p style="font-size: 14px; font-weight: bold; color: #10b981; margin: 8px 0 4px 0;">You're up to date!</p>
-                        <p style="font-size: 12px; color: var(--text-muted);">ReelScript ${result.local_version} is the latest version.</p>
+                        <p style="font-size: 14px; font-weight: bold; color: #10b981; margin: 8px 0 4px 0;">No update found from ${result.local_version}</p>
                     </div>`;
+                githubBtn.style.display = 'none';
+                document.getElementById('btn-close-github-update').textContent = 'Close';
             }
         } catch (e) {
             checkingDiv.style.display = 'none';

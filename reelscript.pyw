@@ -1048,7 +1048,7 @@ print(file)
 
     # Default version info bundled with the app (used for first-install seeding)
     DEFAULT_VERSION = {
-        "version": "2.9.7",
+        "version": "4.2.6",
         "last_updated": "2026-06-04",
         "changelog": [
             "Added prompt confirmation before overwriting with cloud version."
@@ -1104,6 +1104,43 @@ print(file)
                     "local_version": local_ver,
                     "remote_version": remote_ver
                 }
+        except Exception as e:
+            return {"error": str(e)}
+
+    def download_and_install_github_update(self):
+        """Download the latest ReelScript_Setup.exe from GitHub and launch it."""
+        try:
+            import urllib.request
+            import tempfile
+            import threading
+            import sys
+
+            DOWNLOAD_URL = "https://github.com/XENOHEAD/reelscript/releases/latest/download/ReelScript_Setup.exe"
+            temp_dir = tempfile.gettempdir()
+            setup_path = os.path.join(temp_dir, "ReelScript_Setup.exe")
+
+            def _download_and_run():
+                try:
+                    urllib.request.urlretrieve(DOWNLOAD_URL, setup_path)
+                    
+                    # Forcefully kill any running ReelScript.exe instances (including older ones)
+                    if os.name == 'nt':
+                        subprocess.run(['taskkill', '/F', '/IM', 'ReelScript.exe'], capture_output=True)
+                        
+                    # Start the installer independently
+                    if os.name == 'nt':
+                        os.startfile(setup_path)
+                    else:
+                        subprocess.Popen([setup_path])
+                    # Exit the current process so the installer can overwrite files
+                    os._exit(0)
+                except Exception as e:
+                    print("Error during update download/install:", e)
+
+            # Run download in a background thread so pywebview doesn't freeze
+            threading.Thread(target=_download_and_run, daemon=True).start()
+            return {"status": "started"}
+            
         except Exception as e:
             return {"error": str(e)}
 
@@ -1312,6 +1349,12 @@ del "%~f0"
 
 if __name__ == '__main__':
     try:
+        if os.name == 'nt':
+            import ctypes
+            # Create mutex so the Windows installer knows if the app is currently running
+            kernel32 = ctypes.windll.kernel32
+            _mutex = kernel32.CreateMutexW(None, False, "ReelScriptMutex")
+            
         import traceback
         api = BackendAPI()
         

@@ -12,7 +12,7 @@
 ; ============================================================
 
 #define AppName        "ReelScript"
-#define AppVersion     "2.9.7"
+#define AppVersion     "4.2.6"
 #define AppPublisher   "XenoHead"
 #define AppURL         "https://github.com/XENOHEAD/reelscript"
 #define AppExeName     "ReelScript.exe"
@@ -23,6 +23,7 @@
 AppId={{A3F1C2D4-7E8B-4F2A-9C1D-5B6E7F8A9B0C}
 AppName={#AppName}
 AppVersion={#AppVersion}
+AppMutex=ReelScriptMutex
 AppVerName={#AppName} {#AppVersion}
 AppPublisher={#AppPublisher}
 AppPublisherURL={#AppURL}
