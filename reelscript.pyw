@@ -1048,7 +1048,7 @@ print(file)
 
     # Default version info bundled with the app (used for first-install seeding)
     DEFAULT_VERSION = {
-        "version": "4.2.6",
+        "version": "4.4.3",
         "last_updated": "2026-06-04",
         "changelog": [
             "Added prompt confirmation before overwriting with cloud version."
@@ -1073,7 +1073,8 @@ print(file)
 
     def check_for_github_updates(self):
         """Fetch version.json from GitHub and compare against local version."""
-        GITHUB_VERSION_URL = "https://raw.githubusercontent.com/XENOHEAD/reelscript/main/version.json"
+        import time
+        GITHUB_VERSION_URL = f"https://raw.githubusercontent.com/XENOHEAD/reelscript/main/version.json?t={int(time.time())}"
         try:
             import urllib.request
             local_info = self.get_version_info()
@@ -1122,10 +1123,6 @@ print(file)
             def _download_and_run():
                 try:
                     urllib.request.urlretrieve(DOWNLOAD_URL, setup_path)
-                    
-                    # Forcefully kill any running ReelScript.exe instances (including older ones)
-                    if os.name == 'nt':
-                        subprocess.run(['taskkill', '/F', '/IM', 'ReelScript.exe'], capture_output=True)
                         
                     # Start the installer independently
                     if os.name == 'nt':

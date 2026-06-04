@@ -949,8 +949,9 @@ class DeveloperHubApp:
             self.root.after(0, lambda: messagebox.showinfo("Push Success", f"ReelScript executable and version details successfully pushed to GitHub on branch '{branch}'!"))
             
         except Exception as e:
-            self.root.after(0, lambda: self.log(f"❌ Push Exception: {str(e)}"))
-            self.root.after(0, lambda: messagebox.showerror("Push Failed", f"An error occurred during push: {str(e)}"))
+            err_msg = str(e)
+            self.root.after(0, lambda m=err_msg: self.log(f"❌ Push Exception: {m}"))
+            self.root.after(0, lambda m=err_msg: messagebox.showerror("Push Failed", f"An error occurred during push: {m}"))
         finally:
             self.root.after(0, self._enable_buttons)
 
