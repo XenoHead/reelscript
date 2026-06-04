@@ -4992,7 +4992,29 @@ document.getElementById('reports-ai-analysis').addEventListener('click', async (
     syncText.textContent = "Analysis complete";
 
     const formattedResult = result.replace(/Line#(\d+)/gi, '<a href="#" onclick="scrollToLine($1); return false;" style="color: #3b82f6; text-decoration: underline;">Line#$1</a>');
-    window.pywebview.api.open_ai_report_window(formattedResult, window.currentAiReportName);
+
+    // Show in docked panel
+    const sidebar = document.getElementById('ai-report-sidebar');
+    const titleEl = document.getElementById('ai-report-title');
+    const contentEl = document.getElementById('ai-analysis-content');
+    if (titleEl) titleEl.textContent = window.currentAiReportName;
+    if (contentEl) contentEl.innerHTML = formattedResult;
+    if (sidebar) sidebar.style.display = 'flex';
+});
+
+// Close / Copy buttons for docked AI report panel
+document.getElementById('btn-close-ai-report')?.addEventListener('click', () => {
+    const sidebar = document.getElementById('ai-report-sidebar');
+    if (sidebar) sidebar.style.display = 'none';
+});
+document.getElementById('btn-copy-ai-report')?.addEventListener('click', () => {
+    const contentEl = document.getElementById('ai-analysis-content');
+    if (contentEl) {
+        navigator.clipboard.writeText(contentEl.innerText).then(() => {
+            const btn = document.getElementById('btn-copy-ai-report');
+            if (btn) { btn.textContent = '✓ Copied'; setTimeout(() => { btn.textContent = '📋 Copy'; }, 2000); }
+        });
+    }
 });
 
 window.scrollToLine = function (lineNum) {

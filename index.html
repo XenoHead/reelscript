@@ -308,6 +308,18 @@
         </div>
     </div>
 
+    <!-- Docked AI Report Panel (shown after Reports → AI Script Analysis) -->
+    <div id="ai-report-sidebar" class="ai-report-sidebar" style="display:none;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 15px; background:#1a232c; border-bottom:1px solid #36424e; flex-shrink:0;">
+            <span style="font-weight:bold; font-size:13px;">🤖 AI Script Analysis — <span id="ai-report-title" style="color:#10b981;"></span></span>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <button id="btn-copy-ai-report" style="background:#36424e; border:none; color:#d1d5db; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px;">📋 Copy</button>
+                <button id="btn-close-ai-report" style="background:transparent; border:none; color:#abb2bf; cursor:pointer; font-size:18px; line-height:1;" title="Close">✕</button>
+            </div>
+        </div>
+        <div id="ai-analysis-content" style="padding:15px; font-size:13px; line-height:1.7; color:#d1d5db; white-space:pre-wrap; overflow-y:auto; flex:1;"></div>
+    </div>
+
     <div class="status-bar">
         <div class="status-left">
             <div id="line-type-indicator">Current Element: Action</div>
