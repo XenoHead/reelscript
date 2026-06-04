@@ -4435,7 +4435,19 @@ document.getElementById('spellcheck-suggestions').addEventListener('change', (e)
     document.getElementById('spellcheck-custom-correction').value = e.target.value;
 });
 
-document.getElementById('btn-spell-ignore').addEventListener('click', () => { processNextSpelling(); });
+document.getElementById('btn-spell-ignore').addEventListener('click', () => {
+    currentSpellIndex++;
+    currentSpellRange = null;
+    if (currentSpellIndex < currentMisspellings.length) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        const range = document.createRange();
+        range.setStart(editor, 0);
+        range.collapse(true);
+        sel.addRange(range);
+    }
+    processNextSpelling();
+});
 document.getElementById('btn-spell-next').addEventListener('click', () => {
     currentSpellIndex++;
     currentSpellRange = null;
@@ -4483,7 +4495,16 @@ document.getElementById('btn-spell-change').addEventListener('click', () => {
         document.execCommand('insertText', false, replacement);
         triggerBackup();
         updateStats();
-        currentSpellRange = sel.getRangeAt(0).cloneRange();
+    }
+    currentSpellIndex++;
+    currentSpellRange = null;
+    if (currentSpellIndex < currentMisspellings.length) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        const range = document.createRange();
+        range.setStart(editor, 0);
+        range.collapse(true);
+        sel.addRange(range);
     }
     processNextSpelling();
 });
