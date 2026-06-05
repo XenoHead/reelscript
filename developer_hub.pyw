@@ -541,7 +541,31 @@ class DeveloperHubApp:
             except Exception as e:
                 self.log(f"⚠️ Warning: Failed to update version in reelscript.pyw: {str(e)}")
 
-        # 2. Update index.html
+        # 2. Update file_version_info.txt
+        txt_path = os.path.join(current_dir, "file_version_info.txt")
+        if os.path.exists(txt_path):
+            try:
+                with open(txt_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                
+                # Convert "4.5.7" -> "4, 5, 7, 0"
+                ver_parts = new_ver.split(".")
+                while len(ver_parts) < 4:
+                    ver_parts.append("0")
+                ver_tuple = ", ".join(ver_parts[:4])
+                
+                content = re.sub(r'filevers=\([^)]+\)', f'filevers=({ver_tuple})', content)
+                content = re.sub(r'prodvers=\([^)]+\)', f'prodvers=({ver_tuple})', content)
+                content = re.sub(r"u'FileVersion',\s*u'[^']+'", f"u'FileVersion', u'{new_ver}'", content)
+                content = re.sub(r"u'ProductVersion',\s*u'[^']+'", f"u'ProductVersion', u'{new_ver}'", content)
+                
+                with open(txt_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                self.log(f"📝 Updated version to {new_ver} in file_version_info.txt")
+            except Exception as e:
+                self.log(f"⚠️ Warning: Failed to update version in file_version_info.txt: {str(e)}")
+
+        # 3. Update index.html
         html_path = os.path.join(current_dir, "index.html")
         if os.path.exists(html_path):
             try:

@@ -1048,7 +1048,7 @@ print(file)
 
     # Default version info bundled with the app (used for first-install seeding)
     DEFAULT_VERSION = {
-        "version": "4.4.3",
+        "version": "4.7.8",
         "last_updated": "2026-06-04",
         "changelog": [
             "Added prompt confirmation before overwriting with cloud version."
@@ -1109,35 +1109,12 @@ print(file)
             return {"error": str(e)}
 
     def download_and_install_github_update(self):
-        """Download the latest ReelScript_Setup.exe from GitHub and launch it."""
+        """Open the GitHub releases page for the user to download the update."""
         try:
-            import urllib.request
-            import tempfile
-            import threading
-            import sys
-
-            DOWNLOAD_URL = "https://github.com/XENOHEAD/reelscript/releases/latest/download/ReelScript_Setup.exe"
-            temp_dir = tempfile.gettempdir()
-            setup_path = os.path.join(temp_dir, "ReelScript_Setup.exe")
-
-            def _download_and_run():
-                try:
-                    urllib.request.urlretrieve(DOWNLOAD_URL, setup_path)
-                        
-                    # Start the installer independently
-                    if os.name == 'nt':
-                        os.startfile(setup_path)
-                    else:
-                        subprocess.Popen([setup_path])
-                    # Exit the current process so the installer can overwrite files
-                    os._exit(0)
-                except Exception as e:
-                    print("Error during update download/install:", e)
-
-            # Run download in a background thread so pywebview doesn't freeze
-            threading.Thread(target=_download_and_run, daemon=True).start()
+            import webbrowser
+            DOWNLOAD_PAGE = "https://github.com/XENOHEAD/reelscript/releases/latest"
+            webbrowser.open(DOWNLOAD_PAGE)
             return {"status": "started"}
-            
         except Exception as e:
             return {"error": str(e)}
 

@@ -12,9 +12,10 @@
 ; ============================================================
 
 #define AppName        "ReelScript"
-#define AppVersion     "4.4.3"
+#define AppVersion     "4.7.8"
 #define AppPublisher   "XenoHead"
 #define AppURL         "https://github.com/XENOHEAD/reelscript"
+#define AppCopyright   "Copyright (C) 2026 XenoHead"
 #define AppExeName     "ReelScript.exe"
 #define AppDescription "Professional Screenplay Editor"
 
@@ -26,6 +27,7 @@ AppVersion={#AppVersion}
 AppMutex=ReelScriptMutex
 AppVerName={#AppName} {#AppVersion}
 AppPublisher={#AppPublisher}
+AppCopyright={#AppCopyright}
 AppPublisherURL={#AppURL}
 AppSupportURL={#AppURL}/issues
 AppUpdatesURL={#AppURL}/releases

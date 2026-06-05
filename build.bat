@@ -9,16 +9,20 @@ echo [1/3] Installing Python dependencies...
 python -m pip install pyinstaller fpdf fpdf2 pyspellchecker pywebview google-genai requests --quiet
 if errorlevel 1 (
     echo ERROR: pip install failed. Make sure Python is installed and on PATH.
-    pause
     exit /b 1
 )
 
 echo.
+echo [1.5/3] Cleaning up old build artifacts...
+if exist "build" rmdir /s /q "build"
+if exist "dist" rmdir /s /q "dist"
+if exist "ReelScript.spec" del /q "ReelScript.spec"
 
+echo.
 :: Step 2: Compile with PyInstaller
 echo [2/3] Building executable with PyInstaller...
 echo       This may take 2-4 minutes. Please wait...
-python -m PyInstaller --noconfirm --onefile --windowed ^
+python -m PyInstaller --noconfirm --clean --onefile --windowed ^
   --name "ReelScript" ^
   --icon "movie-icon.ico" ^
   --add-data "movie-icon.ico;." ^
@@ -36,6 +40,7 @@ python -m PyInstaller --noconfirm --onefile --windowed ^
   --add-data "mindmap.html;." ^
   --add-data "mindmap.css;." ^
   --add-data "mindmap.js;." ^
+  --version-file "file_version_info.txt" ^
   --hidden-import webview ^
   --hidden-import fpdf ^
   --hidden-import fpdf2 ^
@@ -49,7 +54,6 @@ python -m PyInstaller --noconfirm --onefile --windowed ^
 
 if errorlevel 1 (
     echo ERROR: PyInstaller build failed.
-    pause
     exit /b 1
 )
 
@@ -74,14 +78,12 @@ if %ISCC%=="" (
     echo          Then re-run this script to produce ReelScript_Setup.exe
     echo.
     echo [DONE] Executable only: dist\ReelScript.exe
-    pause
     exit /b 0
 )
 
 %ISCC% installer.iss
 if errorlevel 1 (
     echo ERROR: Inno Setup compilation failed.
-    pause
     exit /b 1
 )
 
@@ -95,4 +97,3 @@ echo  Installer  : dist\ReelScript_Setup.exe
 echo.
 echo  Upload ReelScript_Setup.exe to GitHub Releases.
 echo ==========================================
-pause
